@@ -1,0 +1,15 @@
+Metadata-Version: 2.1
+Name: ppdp-anonops
+Version: 0.0.1
+Summary: A package providing multiple anonymization methods for PM4PY's XES-event logs
+Home-page: https://github.com/TheDevSchnitzel/PPDP-AnonOps
+Author: Alexander 'DevSchnitzel' Schnitzler
+Author-email: DevSchnitzel@outlook.com
+License: UNKNOWN
+Description: # PPDP-AnonOps
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: GPLv3 License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown
