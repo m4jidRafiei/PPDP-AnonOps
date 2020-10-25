@@ -37,10 +37,12 @@ class supression(anonymizationOperationInterface):
         for t_idx, trace in enumerate(self.xesLog):
             # filter out all the events with matching activity values - supressedActivity "concept:name" at event level typically represents the performed activity
             trace[:] = [event for event in trace if event[supressedActivity] != supressedActivityValue]
+        self.AddExtension('Supression', 'Event', 'Event')
 
     def suppressCaseByTraceLength(self, maxLength):
         # Filter for cases with acceptable length
         self.xesLog[:] = [trace for trace in self.xesLog if len(trace) <= maxLength]
+        self.AddExtension('Supression', 'Case', 'Case')
 
     def suppressEventAttribute(self, matchAttribute, matchAttributeValue, supressedAttribute):
         for case_index, case in enumerate(self.xesLog):
@@ -48,3 +50,4 @@ class supression(anonymizationOperationInterface):
                 if (event[matchAttribute] == matchAttributeValue):
                     # Only supress resource if activity value is a match
                     event[supressedAttribute] = None
+        self.AddExtension('Supression', 'Event', supressedAttribute)
