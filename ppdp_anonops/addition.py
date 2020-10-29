@@ -1,50 +1,40 @@
-from anonymizationOperations import anonymizationOperationInterface
+from ppdp_anonops.anonymizationOperationInterface import anonymizationOperationInterface
+from copy import deepcopy
+import random
+from datetime import timedelta
 
-class Addition_AO(anonymizationOperationInterface):
+
+class addition(anonymizationOperationInterface):
     """Extract text from a PDF."""
 
-    def __init__(self):
-        #self.name = name
-        pass
+    def __init__(self, xesLogPath):
+        super(addition, self).__init__(xesLogPath)
 
-    def Process(self, xes_path: str, parameter) -> str:
-        xes_log = xes_importer_factory.apply(xes_path)
-        no_traces = len(xes_log)
-        no_events = sum([len(trace) for trace in xes_log])
+    def addEvent(self, matchAttribute, matchAttributeValue):
+        for case_index, case in enumerate(self.xesLog):
+            traceLength = len(case)
+            firstCase = case[0]
+            lastCase = case[traceLength - 1]
 
-        result = self.get_attributes(xes_log)
+            if(lastCase[matchAttribute] == matchAttributeValue):
+                newEvent = deepcopy(case[traceLength - 1])
 
+                # Randomly generate timestamp after the last trace
+                secDelta = random.randint(0, (lastCase["time:timestamp"] - firstCase["time:timestamp"]).total_seconds())
+                newEvent["time:timestamp"] = newEvent["time:timestamp"] + timedelta(seconds=secDelta)
 
+                case.append(newEvent)
+        self.AddExtension("add", "case", "trace")
 
-#    log[0] refers to the first trace in the log
-#        log[0][0] refers to the first event of the first trace in the log
-#            log[0][1] refers to the second event of the first trace in the log
-#    log[1] refers to the second trace in the log
-#        log[1][0] refers to the first event of the second case in the log
-#        log[1][1] refers to the second event of the second case in the log
-
-
-        return {'Operation': 'Addition', 'Result': result}
-        pass
+    # def addEventAtRandomPlaceInTrace(self):
+    # def addEventFirstInTrace(self):
+    # def addEventLastInTrace(self):
 
     def get_attributes(self, xes_log):
-        sensitives = []
-        case_attribs = []
-        for case_index, case in enumerate(xes_log):
-            for key in case.attributes.keys():
-                if key not in case_attribs:
-                    case_attribs.append(key)
-
         event_attribs = []
         for case_index, case in enumerate(xes_log):
             for event_index, event in enumerate(case):
                 for key in event.keys():
                     if key not in event_attribs:
                         event_attribs.append(key)
-
-        sensitives = case_attribs + event_attribs
-        sensitives.sort()
-        # sensitives = case_attribs
-        print("in function")
-        print(sensitives)
-        return sensitives
+        return event_attribs

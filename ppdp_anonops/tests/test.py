@@ -3,7 +3,7 @@ from pm4py.objects.log.importer.xes import factory as xes_importer_factory
 from pm4py.objects.log.exporter.xes import factory as xes_exporter
 import hashlib
 from cryptography.fernet import Fernet
-from ppdp_anonops.substitution import substitution
+from ppdp_anonops.addition import addition
 import base64
 # running_example.xes
 #Traces: 6
@@ -12,17 +12,17 @@ import base64
 
 def main():
     xes_log = xes_importer_factory.apply("resources/running_example.xes")
-    s = substitution("resources/running_example.xes")
-
-    s.substituteEventAttributeValue("org:resource", ["Sean", "Sara"])
-    s.ExportLog("resources/tmp.xes")
-
     print("no_traces = " + str(len(xes_log)))
     print("no_events = " + str(sum([len(trace) for trace in xes_log])))
 
-    case_attribs, event_attribs = getAttr(xes_log)
-    print(*case_attribs, sep=", ")
-    print(*event_attribs, sep=", ")
+    s = addition("resources/running_example.xes")
+
+    s.addEvent("org:resource", "Ellen")
+
+    s.ExportLog("resources/tmp2.xes")
+
+    print("no_traces = " + str(len(s.xesLog)))
+    print("no_events = " + str(sum([len(trace) for trace in s.xesLog])))
 
 
 def getAttr(xes_log):
