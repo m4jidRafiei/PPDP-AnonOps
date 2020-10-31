@@ -3,7 +3,7 @@ from pm4py.objects.log.importer.xes import factory as xes_importer_factory
 from pm4py.objects.log.exporter.xes import factory as xes_exporter
 import hashlib
 from cryptography.fernet import Fernet
-from ppdp_anonops.addition import addition
+from ppdp_anonops.condensation import condensation
 import base64
 # running_example.xes
 #Traces: 6
@@ -11,13 +11,14 @@ import base64
 
 
 def main():
-    xes_log = xes_importer_factory.apply("resources/running_example.xes")
-    print("no_traces = " + str(len(xes_log)))
-    print("no_events = " + str(sum([len(trace) for trace in xes_log])))
+    #xes_log = xes_importer_factory.apply("resources/running_example.xes")
+    #print("no_traces = " + str(len(xes_log)))
+    #print("no_events = " + str(sum([len(trace) for trace in xes_log])))
 
-    s = addition("resources/running_example.xes")
+    #s = condensation("resources/running_example.xes")
+    s = condensation("resources/Sepsis Cases - Event Log.xes")
 
-    s.addEvent("org:resource", "Ellen")
+    s.condenseEventAttributeBykMeanClusterMode("CRP", 5)
 
     s.ExportLog("resources/tmp2.xes")
 

@@ -32,3 +32,12 @@ class anonymizationOperationInterface(metaclass=abc.ABCMeta):
         #privacy.set_anonymizer('substitution', 'event', 'concept:name')
         privacy.set_anonymizer(anonOp, level, target)
         # End of adding extension
+
+    def getEventAttributes(self, xes_log):
+        event_attribs = []
+        for case_index, case in enumerate(xes_log):
+            for event_index, event in enumerate(case):
+                for key in event.keys():
+                    if key not in event_attribs:
+                        event_attribs.append(key)
+        return event_attribs
