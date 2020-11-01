@@ -16,16 +16,11 @@ class condensation(anonymizationOperationInterface):
     def __init__(self, xesLogPath):
         super(condensation, self).__init__(xesLogPath)
 
-    def Process(self, xes_path: str, parameter) -> str:
-        result = None
-        return {'Operation': 'Condensation', 'Result': result}
-        pass
-
     # Possibly realize by k-means clustering
     # def condenseNumericalAttribute(self, sensitiveAttribute):
 
     def condenseEventAttributeBykMeanClusterMode(self, sensitiveAttribute, k_clusters):
-        values = self.__getEventAttributeValues(sensitiveAttribute)
+        values = self._getEventAttributeValues(sensitiveAttribute)
 
         self.__checkNumericAttributes(values)
 
@@ -42,7 +37,7 @@ class condensation(anonymizationOperationInterface):
         self.AddExtension('con', 'event', sensitiveAttribute)
 
     def condenseCaseAttributeUsingMode(self, sensitiveAttribute, k_clusters):
-        values = self.__getCaseAttributeValues(sensitiveAttribute)
+        values = self._getCaseAttributeValues(sensitiveAttribute)
 
         self.__checkNumericAttributes(values)
 
@@ -71,19 +66,6 @@ class condensation(anonymizationOperationInterface):
         # Sort dict by value
         s = {k: v for k, v in sorted(s.items(), key=lambda item: item[1])}
         return next(iter(s.keys()))
-
-    def __getEventAttributeValues(self, attribute):
-        values = []
-
-        for case_index, case in enumerate(self.xesLog):
-            for event_index, event in enumerate(case):
-                if(attribute in event.keys()):
-                    values.append(event[attribute])
-
-        return values
-
-    def __getCaseAttributeValues(self, attribute):
-        return [case[attribute] for case_index, case in enumerate(self.xesLog)]
 
     # Make sure all values provided are actually numeric
     def __checkNumericAttributes(self, values):

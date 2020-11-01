@@ -41,3 +41,16 @@ class anonymizationOperationInterface(metaclass=abc.ABCMeta):
                     if key not in event_attribs:
                         event_attribs.append(key)
         return event_attribs
+
+    def _getEventAttributeValues(self, attribute):
+        values = []
+
+        for case_index, case in enumerate(self.xesLog):
+            for event_index, event in enumerate(case):
+                if(attribute in event.keys()):
+                    values.append(event[attribute])
+
+        return values
+
+    def _getCaseAttributeValues(self, attribute):
+        return [case[attribute] for case_index, case in enumerate(self.xesLog)]
