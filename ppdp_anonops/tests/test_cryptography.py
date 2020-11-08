@@ -1,6 +1,6 @@
 from unittest import TestCase
 import os
-from ppdp_anonops.cryptography import cryptography
+from ppdp_anonops import Cryptography
 
 
 class TestCryptography(TestCase):

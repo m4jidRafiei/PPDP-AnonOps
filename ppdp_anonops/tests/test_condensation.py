@@ -1,6 +1,6 @@
 from unittest import TestCase
 import os
-from ppdp_anonops.condensation import condensation
+from ppdp_anonops import Condensation
 
 
 class TestCondensation(TestCase):
@@ -9,12 +9,12 @@ class TestCondensation(TestCase):
 
     def test_eventLevelCondensation(self):
         for clusters in range(4, 7):
-            s = condensation(self.getTestXesPath())
+            s = Condensation(self.getTestXesPath())
 
             # Needs to be a numeric attribute
             matchAttribute = "CRP"
 
-            s.condenseEventAttributeBykMeanClusterMode(matchAttribute, clusters)
+            s.CondenseEventAttributeBykMeanClusterMode(matchAttribute, clusters)
 
             self.assertEqual(self.__getNumberOfDistinctEventAttributeValues(s, matchAttribute), clusters)
 

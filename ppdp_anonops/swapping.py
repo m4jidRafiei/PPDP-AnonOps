@@ -1,4 +1,4 @@
-from ppdp_anonops.anonymizationOperationInterface import anonymizationOperationInterface
+from .anonymizationOperationInterface import AnonymizationOperationInterface
 import collections
 import random
 
@@ -12,11 +12,11 @@ import numpy as np
 import numbers
 
 
-class swapping(anonymizationOperationInterface):
+class Swapping(AnonymizationOperationInterface):
     def __init__(self, xesLogPath):
-        super(swapping, self).__init__(xesLogPath)
+        super(Swapping, self).__init__(xesLogPath)
 
-    def swapEventAttributeValuesBykMeanCluster(self, sensitiveAttribute, k_clusters):
+    def SwapEventAttributeValuesBykMeanCluster(self, sensitiveAttribute, k_clusters):
         values = self._getEventAttributeValues(sensitiveAttribute)
 
         self.__checkNumericAttributes(values)
@@ -40,7 +40,7 @@ class swapping(anonymizationOperationInterface):
 
         self.AddExtension('swa', 'event', sensitiveAttribute)
 
-    def swapCaseAttributeValuesBykMeanCluster(self, sensitiveAttribute, k_clusters):
+    def SwapCaseAttributeValuesBykMeanCluster(self, sensitiveAttribute, k_clusters):
         values = self._getCaseAttributeValues(sensitiveAttribute)
 
         self.__checkNumericAttributes(values)

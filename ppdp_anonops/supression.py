@@ -1,13 +1,13 @@
-from ppdp_anonops.anonymizationOperationInterface import anonymizationOperationInterface
+from .anonymizationOperationInterface import AnonymizationOperationInterface
 from pm4py.objects.log.importer.xes import factory as xes_importer_factory
 import hashlib
 
 
-class supression(anonymizationOperationInterface):
+class Supression(AnonymizationOperationInterface):
     """Replace a """
 
     def __init__(self, xesLogPath):
-        super(supression, self).__init__(xesLogPath)
+        super(Supression, self).__init__(xesLogPath)
 
     def Process(self, xes_path: str, parameter) -> str:
         xes_log = xes_importer_factory.apply(xes_path)
@@ -25,7 +25,7 @@ class supression(anonymizationOperationInterface):
                     #        event_attribs.append(key)
 
         elif (parameter['OP_Level'] == 'Case' and parameter['OP_Target'] == 'Case'):
-            result = self.suppressCaseByTraceLength(8)
+            result = self.SuppressCaseByTraceLength(8)
         elif (parameter['OP_Level'] == 'event' and parameter['OP_Target'] == 'resource'):
             result = None
         else:
@@ -33,18 +33,18 @@ class supression(anonymizationOperationInterface):
         return {'Operation': 'Supression', 'Result': result}
         pass
 
-    def suppressEvent(self, supressedActivity, supressedActivityValue):
+    def SuppressEvent(self, supressedActivity, supressedActivityValue):
         for t_idx, trace in enumerate(self.xesLog):
             # filter out all the events with matching activity values - supressedActivity "concept:name" at event level typically represents the performed activity
             trace[:] = [event for event in trace if event[supressedActivity] != supressedActivityValue]
         self.AddExtension('Supression', 'Event', 'Event')
 
-    def suppressCaseByTraceLength(self, maxLength):
+    def SuppressCaseByTraceLength(self, maxLength):
         # Filter for cases with acceptable length
         self.xesLog[:] = [trace for trace in self.xesLog if len(trace) <= maxLength]
         self.AddExtension('Supression', 'Case', 'Case')
 
-    def suppressEventAttribute(self, matchAttribute, matchAttributeValue, supressedAttribute):
+    def SuppressEventAttribute(self, matchAttribute, matchAttributeValue, supressedAttribute):
         for case_index, case in enumerate(self.xesLog):
             for event_index, event in enumerate(case):
                 if (event[matchAttribute] == matchAttributeValue):

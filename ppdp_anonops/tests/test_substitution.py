@@ -1,6 +1,6 @@
 from unittest import TestCase
 import os
-from ppdp_anonops.substitution import substitution
+from ppdp_anonops import Substitution
 
 
 class TestSubstitution(TestCase):
@@ -8,7 +8,7 @@ class TestSubstitution(TestCase):
         return os.path.join(os.path.dirname(__file__), 'resources', 'running_example.xes')
 
     def test_substituteResources(self):
-        s = substitution(self.getTestXesPath())
+        s = Substitution(self.getTestXesPath())
 
         frequency = {"Sean": 0, "Sara": 0}
         for case_index, case in enumerate(s.xesLog):
@@ -19,7 +19,7 @@ class TestSubstitution(TestCase):
         self.assertGreater(frequency["Sean"], 0)
         self.assertGreater(frequency["Sara"], 0)
 
-        s.substituteEventAttributeValue("org:resource", ["Sean", "Sara"])
+        s.SubstituteEventAttributeValue("org:resource", ["Sean", "Sara"])
 
         frequency = {"Sean": 0, "Sara": 0}
         for case_index, case in enumerate(s.xesLog):

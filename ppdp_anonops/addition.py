@@ -1,16 +1,21 @@
-from ppdp_anonops.anonymizationOperationInterface import anonymizationOperationInterface
+from .anonymizationOperationInterface import AnonymizationOperationInterface
 from copy import deepcopy
 import random
 from datetime import timedelta
 
 
-class addition(anonymizationOperationInterface):
+class Addition(AnonymizationOperationInterface):
     """Extract text from a PDF."""
 
     def __init__(self, xesLogPath):
-        super(addition, self).__init__(xesLogPath)
+        super(Addition, self).__init__(xesLogPath)
 
-    def addEvent(self, matchAttribute, matchAttributeValue):
+
+# give user opportunity to design the newly added event! (06.11.20 / Meeting with Majid)
+
+
+    def AddEvent(self, matchAttribute, matchAttributeValue):
+        # event based not case based
         for case_index, case in enumerate(self.xesLog):
             traceLength = len(case)
             firstCase = case[0]

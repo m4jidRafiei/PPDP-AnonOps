@@ -1,13 +1,13 @@
-from ppdp_anonops.anonymizationOperationInterface import anonymizationOperationInterface
+from .anonymizationOperationInterface import AnonymizationOperationInterface
 import random
 
 
-class substitution(anonymizationOperationInterface):
+class Substitution(AnonymizationOperationInterface):
 
     def __init__(self, xesLogPath):
-        super(substitution, self).__init__(xesLogPath)
+        super(Substitution, self).__init__(xesLogPath)
 
-    def substituteEventAttributeValue(self, matchAttribute, sensitiveAttributeValues):
+    def SubstituteEventAttributeValue(self, matchAttribute, sensitiveAttributeValues):
         insensitiveAttributes = []
         for case_index, case in enumerate(self.xesLog):
             for event_index, event in enumerate(case):

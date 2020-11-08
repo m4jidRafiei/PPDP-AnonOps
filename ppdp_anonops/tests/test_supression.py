@@ -1,6 +1,6 @@
 from unittest import TestCase
 import os
-from ppdp_anonops.supression import supression
+from ppdp_anonops import Supression
 
 
 class TestSupression(TestCase):
@@ -8,14 +8,14 @@ class TestSupression(TestCase):
         return os.path.join(os.path.dirname(__file__), 'resources', 'running_example.xes')
 
     def test_suppressEvent(self):
-        s = supression(self.getTestXesPath())
+        s = Supression(self.getTestXesPath())
 
         no_traces = len(s.xesLog)
         no_events = sum([len(trace) for trace in s.xesLog])
         self.assertEqual(no_traces, 6)
         self.assertEqual(no_events, 42)
 
-        s.suppressEvent("concept:name", "reinitiate request")  # concept:name is activity
+        s.SuppressEvent("concept:name", "reinitiate request")  # concept:name is activity
 
         no_traces = len(s.xesLog)
         no_events = sum([len(trace) for trace in s.xesLog])
@@ -23,7 +23,7 @@ class TestSupression(TestCase):
         self.assertEqual(no_events, 39)
 
     def test_suppressEventAttribute(self):
-        s = supression(self.getTestXesPath())
+        s = Supression(self.getTestXesPath())
 
         matchAttribute = "concept:name"
         matchAttributeValue = "reinitiate request"
@@ -44,7 +44,7 @@ class TestSupression(TestCase):
         self.assertEqual(counter, 0)
 
         # Supress resource if activity matches 'reinitiate request'
-        s.suppressEventAttribute("concept:name", "reinitiate request", "org:resource")
+        s.SuppressEventAttribute("concept:name", "reinitiate request", "org:resource")
 
         no_traces = len(s.xesLog)
         no_events = sum([len(trace) for trace in s.xesLog])
@@ -61,14 +61,14 @@ class TestSupression(TestCase):
         self.assertEqual(counter, 3)
 
     def test_suppressCaseByTraceLength(self):
-        s = supression(self.getTestXesPath())
+        s = Supression(self.getTestXesPath())
 
         no_traces = len(s.xesLog)
         no_events = sum([len(trace) for trace in s.xesLog])
         self.assertEqual(no_traces, 6)
         self.assertEqual(no_events, 42)
 
-        s.suppressCaseByTraceLength(5)
+        s.SuppressCaseByTraceLength(5)
 
         no_traces = len(s.xesLog)
         no_events = sum([len(trace) for trace in s.xesLog])

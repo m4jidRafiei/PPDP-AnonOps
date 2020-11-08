@@ -1,12 +1,14 @@
-from ppdp_anonops.anonymizationOperationInterface import anonymizationOperationInterface
+from .anonymizationOperationInterface import AnonymizationOperationInterface
 
 
-class generalization(anonymizationOperationInterface):
+class Generalization(AnonymizationOperationInterface):
 
     def __init__(self, xesLogPath):
-        super(generalization, self).__init__(xesLogPath)
+        super(Generalization, self).__init__(xesLogPath)
 
-    def generalizeEventTimeAttribute(self, dateTimeAttribute, generalizationLevel):
+# generalization by taxonomy tree
+
+    def GeneralizeEventTimeAttribute(self, dateTimeAttribute, generalizationLevel):
         for case_index, case in enumerate(self.xesLog):
             for event_index, event in enumerate(case):
                 if(generalizationLevel == "seconds"):

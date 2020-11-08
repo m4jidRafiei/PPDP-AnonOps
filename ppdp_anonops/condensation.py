@@ -1,4 +1,4 @@
-from ppdp_anonops.anonymizationOperationInterface import anonymizationOperationInterface
+from .anonymizationOperationInterface import AnonymizationOperationInterface
 import collections
 
 # k-means
@@ -11,15 +11,15 @@ import numpy as np
 import numbers
 
 
-class condensation(anonymizationOperationInterface):
+class Condensation(AnonymizationOperationInterface):
 
     def __init__(self, xesLogPath):
-        super(condensation, self).__init__(xesLogPath)
+        super(Condensation, self).__init__(xesLogPath)
 
     # Possibly realize by k-means clustering
     # def condenseNumericalAttribute(self, sensitiveAttribute):
 
-    def condenseEventAttributeBykMeanClusterMode(self, sensitiveAttribute, k_clusters):
+    def CondenseEventAttributeBykMeanClusterMode(self, sensitiveAttribute, k_clusters):
         values = self._getEventAttributeValues(sensitiveAttribute)
 
         self.__checkNumericAttributes(values)
@@ -36,7 +36,7 @@ class condensation(anonymizationOperationInterface):
         print(clusterMode)
         self.AddExtension('con', 'event', sensitiveAttribute)
 
-    def condenseCaseAttributeUsingMode(self, sensitiveAttribute, k_clusters):
+    def CondenseCaseAttributeUsingMode(self, sensitiveAttribute, k_clusters):
         values = self._getCaseAttributeValues(sensitiveAttribute)
 
         self.__checkNumericAttributes(values)

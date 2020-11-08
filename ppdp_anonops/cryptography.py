@@ -1,11 +1,11 @@
-from ppdp_anonops.anonymizationOperationInterface import anonymizationOperationInterface
+from .anonymizationOperationInterface import AnonymizationOperationInterface
 from pm4py.objects.log.importer.xes import factory as xes_importer_factory
 import hashlib
 from cryptography.fernet import Fernet
 import base64
 
 
-class cryptography(anonymizationOperationInterface):
+class Cryptography(AnonymizationOperationInterface):
     """Extract text from a PDF."""
 
     def __init__(self, xesLogPath):
@@ -13,8 +13,8 @@ class cryptography(anonymizationOperationInterface):
         self.cryptoKey = b'h3aDgKh3QwzTHBM3GRj4vYYuVD0zXWLMDjrxU3XUuQs='
         self.cryptoSalt = "a.9_Oq1S*23xLgB"
 
-    def hashEventAttribute(self, matchAttribute, matchAttributeValue, targetedAttribute):
-        h = hashlib.new('ripemd160')
+    def HashEventAttribute(self, matchAttribute, matchAttributeValue, targetedAttribute, hashAlgo='ripemd160'):
+        h = hashlib.new(hashAlgo)
 
         for case_index, case in enumerate(self.xesLog):
             for event_index, event in enumerate(case):
@@ -25,7 +25,7 @@ class cryptography(anonymizationOperationInterface):
 
         self.AddExtension('Cryptography', 'Event', targetedAttribute)
 
-    def encryptEventAttribute(self, matchAttribute, matchAttributeValue, targetedAttribute):
+    def EncryptEventAttribute(self, matchAttribute, matchAttributeValue, targetedAttribute):
         cipher_suite = Fernet(self.cryptoKey)  # base64 coded 32-Byte key
 
         for case_index, case in enumerate(self.xesLog):
