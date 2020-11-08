@@ -13,10 +13,10 @@ class TaxonomyTree:
 
     """RootNode is Level 0. Returns a dictionary, where the keys are the values below level x and the values are their according parents on level x"""
 
-    def GetGeneralizedDict_NodeNameToLevelXParentalName(self, levelX):
-        if(levelX < 0):
+    def GetGeneralizedDict_NodeNameToDepthXParentalName(self, depthX):
+        if(depthX < 0):
             raise NotImplementedError("Unable to perform negative level generalization")
-        return self.RootNode.__generalizeNodesByNameDict__(levelX, 0)
+        return self.RootNode.__generalizeNodesByNameDict__(depthX, 0)
 
     def PrintTree(self):
         self.RootNode.Print()
