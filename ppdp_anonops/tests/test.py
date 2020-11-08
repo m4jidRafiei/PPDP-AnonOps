@@ -6,49 +6,61 @@ from cryptography.fernet import Fernet
 from ppdp_anonops import Condensation, Swapping
 import base64
 from math import sqrt
+from ppdp_anonops.utils import *
 
 # running_example.xes
-#Traces: 6
+# Traces: 6
 # Events 42
 import numpy as np
 from kmodes.kmodes import KModes
 
 
 def main():
-    xes_log = xes_importer_factory.apply("resources/Sepsis Cases - Event Log.xes")
+    tax = TaxonomyTree()
+    n_healthcare = tax.AddNode("Healthcare")
 
-    # random categorical data
-    data = np.random.choice(20, (100, 10))
+    n_hospital = n_healthcare.AddChildNode("Hospital")
+    n_surgery = n_hospital.AddChildNode("Surgery")
+    n_surgery.AddChildNode("Surgeon")
+    n_surgery.AddChildNode("Anesthesist")
+    n_surgery.AddChildNode("Caretaker")
+    n_diagnostic = n_hospital.AddChildNode("Diagnostic")
+    n_diagnostic.AddChildNode("Internist")
+    n_diagnostic.AddChildNode("Pharmacist")
+    n_diagnostic.AddChildNode("Caretaker")
 
-    km = KModes(n_clusters=4, init='Huang', n_init=5, verbose=1)
+    n_insurance = n_healthcare.AddChildNode("Insurance")
+    n_insurance.AddChildNode("Bookkeeping")
+    n_insurance.AddChildNode("IT")
+    n_insurance.AddChildNode("Consulting")
+    n_insurance.AddChildNode("Support")
 
-    clusters = km.fit_predict(xes_log)
+    n_aerospace = tax.AddNode("Aerospace")
+    n_it = tax.AddNode("IT")
 
-    # Print the cluster centroids
-    print(km.cluster_centroids_)
-
-    #s = condensation("resources/Sepsis Cases - Event Log.xes")
-    #s.condenseEventAttributeBykMeanClusterMode("CRP", 5)
-    # s.ExportLog("resources/tmp2.xes")
-
-    s = Swapping("resources/Sepsis Cases - Event Log.xes")
-    s.SwapEventAttributeValuesBykMeanCluster("CRP", 5)
-    s.ExportLog("resources/tmp2.xes")
-
-    print("no_traces = " + str(len(s.xesLog)))
-    print("no_events = " + str(sum([len(trace) for trace in s.xesLog])))
+    tax.PrintTree()
+    print('\n\n')
+    dict = tax.GetGeneralizedDict_NodeNameToLevelXParentalName(2)
+    print(dict)
+    print('\n\n')
+    dict = tax.GetGeneralizedDict_NodeNameToLevelXParentalName(3)
+    print(dict)
+    print('\n\n')
+    dict = tax.GetGeneralizedDict_NodeNameToLevelXParentalName(4)
+    print(dict)
+    print('\n\n')
 
 
-def euclidianDistance(weights, attributesA, attributesB):
-    if(len(weights) != len(attributesA) != len(attributesB)):
-        raise
+# def euclidianDistance(weights, attributesA, attributesB):
+#     if(len(weights) != len(attributesA) != len(attributesB)):
+#         # raise
 
-    sum = 0
+#     sum = 0
 
-    for i in range(len(weights)):
-        sum += weights[i] * ((attributesA[i] - attributesB[i]) ** 2)
+#     for i in range(len(weights)):
+#         sum += weights[i] * ((attributesA[i] - attributesB[i]) ** 2)
 
-    return sqrt(sum)
+#     return sqrt(sum)
 
 
 def getAttr(xes_log):

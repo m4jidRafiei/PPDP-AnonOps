@@ -5,18 +5,21 @@ class TaxonomyTree:
 
     """Adding a node below root"""
 
-    def addNode(self, name: str):
-        return self.RootNode.addChildNode(name)
+    def AddNode(self, name: str):
+        return self.RootNode.AddChildNode(name)
 
-    def getNodeByName(self, name: str):
-        return self.RootNode.getChildByName(name)
+    def GetNodeByName(self, name: str):
+        return self.RootNode.GetChildByName(name)
 
     """RootNode is Level 0. Returns a dictionary, where the keys are the values below level x and the values are their according parents on level x"""
 
-    def getGeneralizedDict_NodeNameToLevelXParentalName(self, levelX):
+    def GetGeneralizedDict_NodeNameToLevelXParentalName(self, levelX):
         if(levelX < 0):
             raise NotImplementedError("Unable to perform negative level generalization")
         return self.RootNode.__generalizeNodesByNameDict__(levelX, 0)
+
+    def PrintTree(self):
+        self.RootNode.Print()
 
 
 class TaxonomyTreeNode:
@@ -26,18 +29,18 @@ class TaxonomyTreeNode:
         self.Children = []
         pass
 
-    def addChildNode(self, name: str):
+    def AddChildNode(self, name: str):
         node = TaxonomyTreeNode(name, self)
         self.Children.append(node)
         return node
 
-    def getNodePath(self):
+    def GetNodePath(self):
         if self.Parent is not None:
             return self.Parent.getNodePath() + '/' + self.Name
         else:
             return self.Name
 
-    def getChildByName(self, name: str):
+    def GetChildByName(self, name: str):
         if len(self.Children) > 0:
             for c in self.Children:
                 if c.Name == name:
@@ -77,14 +80,25 @@ class TaxonomyTreeNode:
             for c in self.Children:
                 childList = c.__getNodesBelowDepthX__(depthX, currentDepth + 1)
 
-            # Merge lists
-            nodes = nodes + childList
+                # Merge lists
+                nodes = nodes + childList
 
         # If current node is below the desired level => add to list
-        if currentDepth > depthX:
+        # (currentDepth - 1) as this node actually belongs to its parent
+        if (currentDepth - 1) > depthX:
             nodes.append(self)
 
         return nodes
+
+    def Print(self, indent=0):
+        print(str(int(indent/4)) + ' - ', end='')
+        print(' ' * indent, end='')
+        print(self.Name)
+
+        if len(self.Children) > 0:
+            for c in self.Children:
+                c.Print(indent + 4)
+
 
 # {
 #   'Node1LevelX+1_Name': NodeLevelX_Name,
