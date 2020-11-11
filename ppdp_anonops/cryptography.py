@@ -1,8 +1,10 @@
 from .anonymizationOperationInterface import AnonymizationOperationInterface
 from pm4py.objects.log.importer.xes import factory as xes_importer_factory
 import hashlib
-from cryptography.fernet import Fernet
-import base64
+from Crypto.Cipher import AES
+from Crypto.Util.Padding import pad
+from Crypto.Random import get_random_bytes
+from base64 import b64encode
 
 
 class Cryptography(AnonymizationOperationInterface):
@@ -10,60 +12,65 @@ class Cryptography(AnonymizationOperationInterface):
 
     def __init__(self):
         super(Cryptography, self).__init__()
-        self.cryptoKey = b'h3aDgKh3QwzTHBM3GRj4vYYuVD0zXWLMDjrxU3XUuQs='
+        self.cryptoKey = b'Sixteen byte key'
+        self.cryptoIV = b'I am IV for AES!'
         self.cryptoSalt = "a.9_Oq1S*23xLgB"
 
-    def HashEventAttribute(self, xesLog, matchAttribute, matchAttributeValue, targetedAttribute, hashAlgo='ripemd160'):
-        h = hashlib.new(hashAlgo)
-
+    def HashEventAttribute(self, xesLog, targetedAttribute, matchAttribute=None, matchAttributeValue=None,  hashAlgo='ripemd160'):
         for case_index, case in enumerate(xesLog):
             for event_index, event in enumerate(case):
-                if matchAttribute in event.keys():
-                    if (event[matchAttribute] == matchAttributeValue):
-                        # Only supress resource if activity value is a match
-                        h.update(self.cryptoSalt + event[targetedAttribute].encode('utf-8'))
-                        event[targetedAttribute] = h.hexdigest()
+                # Only hash if value is a match or no mathcing is required
+                isMatch = matchAttribute in (None, '') or (matchAttribute in event.keys() and event[matchAttribute] == matchAttributeValue)
 
-        self.AddExtension(xesLog, 'Cryptography', 'Event', targetedAttribute)
-
-        return xesLog
-
-    def EncryptEventAttribute(self, xesLog, matchAttribute, matchAttributeValue, targetedAttribute):
-        cipher_suite = Fernet(self.cryptoKey)  # base64 coded 32-Byte key
-
-        for case_index, case in enumerate(xesLog):
-            for event_index, event in enumerate(case):
-                if matchAttribute in event.keys():
-                    if (event[matchAttribute] == matchAttributeValue):
-                        # Only supress resource if activity value is a match
-                        event[targetedAttribute] = base64.b64encode(cipher_suite.encrypt(event[targetedAttribute].encode('utf-8')))
-
-        self.AddExtension(xesLog, 'Cryptography', 'Event', targetedAttribute)
-
-        return xesLog
-
-    def HashCaseAttribute(self, xesLog, matchAttribute, matchAttributeValue, targetedAttribute, hashAlgo='ripemd160'):
-        h = hashlib.new(hashAlgo)
-
-        for case_index, case in enumerate(xesLog):
-            if matchAttribute in case.keys():
-                if (case[matchAttribute] == matchAttributeValue):
+                if(isMatch and targetedAttribute in event.keys()):
                     # Only supress resource if activity value is a match
-                    h.update(self.cryptoSalt + case[targetedAttribute].encode('utf-8'))
-                    case[targetedAttribute] = h.hexdigest()
+                    h = hashlib.new(hashAlgo)
+
+                    h.update((self.cryptoSalt + event[targetedAttribute]).encode('utf-8'))
+                    # print((self.cryptoSalt + event[targetedAttribute]).encode('utf-8'))
+                    event[targetedAttribute] = h.hexdigest()
+
+        self.AddExtension(xesLog, 'Cryptography', 'Event', targetedAttribute)
+
+        return xesLog
+
+    def EncryptEventAttribute(self, xesLog, targetedAttribute, matchAttribute=None, matchAttributeValue=None):
+        for case_index, case in enumerate(xesLog):
+            for event_index, event in enumerate(case):
+                # Only crypt if value is a match or no mathcing is required
+                isMatch = matchAttribute in (None, '') or (matchAttribute in event.keys() and event[matchAttribute] == matchAttributeValue)
+
+                if(isMatch and targetedAttribute in event.keys()):
+                    cipher = AES.new(self.cryptoKey, AES.MODE_CBC, iv=self.cryptoIV)
+                    event[targetedAttribute] = cipher.encrypt(pad(event[targetedAttribute].encode('utf-8'), AES.block_size)).hex()
+
+        self.AddExtension(xesLog, 'Cryptography', 'Event', targetedAttribute)
+
+        return xesLog
+
+    def HashCaseAttribute(self, xesLog, targetedAttribute, matchAttribute=None, matchAttributeValue=None, hashAlgo='ripemd160'):
+        h = hashlib.new(hashAlgo)
+
+        for case_index, case in enumerate(xesLog):
+            # Only hash if value is a match or no mathcing is required
+            isMatch = matchAttribute in (None, '') or (matchAttribute in case.keys() and case[matchAttribute] == matchAttributeValue)
+
+            if(isMatch and targetedAttribute in case.keys()):
+                h.update((self.cryptoSalt + case[targetedAttribute]).encode('utf-8'))
+                case[targetedAttribute] = h.hexdigest()
 
         self.AddExtension(xesLog, 'Cryptography', 'Case', targetedAttribute)
 
         return xesLog
 
-    def EncryptCaseAttribute(self, xesLog, matchAttribute, matchAttributeValue, targetedAttribute):
-        cipher_suite = Fernet(self.cryptoKey)  # base64 coded 32-Byte key
-
+    def EncryptCaseAttribute(self, xesLog, targetedAttribute, matchAttribute=None, matchAttributeValue=None):
         for case_index, case in enumerate(xesLog):
-            if matchAttribute in case.keys():
-                if (case[matchAttribute] == matchAttributeValue):
-                    # Only supress resource if activity value is a match
-                    case[targetedAttribute] = base64.b64encode(cipher_suite.encrypt(case[targetedAttribute].encode('utf-8')))
+            # Only crypt if value is a match or no mathcing is required
+            isMatch = matchAttribute in (None, '') or (matchAttribute in case.keys() and case[matchAttribute] == matchAttributeValue)
+
+            if(isMatch and targetedAttribute in case.keys()):
+                cipher = AES.new(self.cryptoKey, AES.MODE_CBC, iv=self.cryptoIV)
+                case[targetedAttribute] = cipher.encrypt(pad(case[targetedAttribute].encode('utf-8'), AES.block_size)).hex()
 
         self.AddExtension(xesLog, 'Cryptography', 'Case', targetedAttribute)
 
