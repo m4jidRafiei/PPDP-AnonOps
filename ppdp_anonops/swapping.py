@@ -13,11 +13,11 @@ import numbers
 
 
 class Swapping(AnonymizationOperationInterface):
-    def __init__(self, xesLogPath):
-        super(Swapping, self).__init__(xesLogPath)
+    def __init__(self):
+        super(Swapping, self).__init__()
 
-    def SwapEventAttributeValuesBykMeanCluster(self, sensitiveAttribute, k_clusters):
-        values = self._getEventAttributeValues(sensitiveAttribute)
+    def SwapEventAttributeValuesBykMeanCluster(self, xesLog, sensitiveAttribute, k_clusters):
+        values = self._getEventAttributeValues(xesLog, sensitiveAttribute)
 
         self.__checkNumericAttributes(values)
 
@@ -26,7 +26,7 @@ class Swapping(AnonymizationOperationInterface):
         valueClusterDict, clusteredValues = self.__getClusterHelpers(kmeans, values)
 
         # Choose random new value from clustered data
-        for case_index, case in enumerate(self.xesLog):
+        for case_index, case in enumerate(xesLog):
             for event_index, event in enumerate(case):
                 if(sensitiveAttribute in event.keys()):
                     # Get possible values from current values cluster
@@ -38,10 +38,11 @@ class Swapping(AnonymizationOperationInterface):
                     # Overwrite old attribute value with new one
                     event[sensitiveAttribute] = listOfValues[rnd]
 
-        self.AddExtension('swa', 'event', sensitiveAttribute)
+        self.AddExtension(xesLog, 'swa', 'event', sensitiveAttribute)
+        return xesLog
 
-    def SwapCaseAttributeValuesBykMeanCluster(self, sensitiveAttribute, k_clusters):
-        values = self._getCaseAttributeValues(sensitiveAttribute)
+    def SwapCaseAttributeValuesBykMeanCluster(self, xesLog, sensitiveAttribute, k_clusters):
+        values = self._getCaseAttributeValues(xesLog, sensitiveAttribute)
 
         self.__checkNumericAttributes(values)
 
@@ -50,7 +51,7 @@ class Swapping(AnonymizationOperationInterface):
         valueClusterDict, clusteredValues = self.__getClusterHelpers(kmeans, values)
 
         # Choose random new value from clustered data
-        for case_index, case in enumerate(self.xesLog):
+        for case_index, case in enumerate(xesLog):
             if(sensitiveAttribute in case.keys()):
                 # Get possible values from current values cluster
                 listOfValues = clusteredValues[valueClusterDict[case[sensitiveAttribute]]]
@@ -61,7 +62,8 @@ class Swapping(AnonymizationOperationInterface):
                 # Overwrite old attribute value with new one
                 case[sensitiveAttribute] = listOfValues[rnd]
 
-        self.AddExtension('swa', 'case', sensitiveAttribute)
+        self.AddExtension(xesLog, 'swa', 'case', sensitiveAttribute)
+        return xesLog
 
     # Make sure all values provided are actually numeric
     def __checkNumericAttributes(self, values):

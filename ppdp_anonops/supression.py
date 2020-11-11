@@ -6,48 +6,27 @@ import hashlib
 class Supression(AnonymizationOperationInterface):
     """Replace a """
 
-    def __init__(self, xesLogPath):
-        super(Supression, self).__init__(xesLogPath)
+    def __init__(self):
+        super(Supression, self).__init__()
 
-    def Process(self, xes_path: str, parameter) -> str:
-        xes_log = xes_importer_factory.apply(xes_path)
-        no_traces = len(xes_log)
-        no_events = sum([len(trace) for trace in xes_log])
-        result = None
-
-        if (parameter['OP_Level'] == 'event' and parameter['OP_Target'] == 'event'):
-            # Event based supression: If an event has a certain activity value it is removed from the trace
-            for case_index, case in enumerate(xes_log):
-                for event_index, event in enumerate(case):
-                    result = {'Event': event}
-                    # for key in event.keys():
-                    #    if key not in event_attribs:
-                    #        event_attribs.append(key)
-
-        elif (parameter['OP_Level'] == 'Case' and parameter['OP_Target'] == 'Case'):
-            result = self.SuppressCaseByTraceLength(8)
-        elif (parameter['OP_Level'] == 'event' and parameter['OP_Target'] == 'resource'):
-            result = None
-        else:
-            raise NotImplementedError
-        return {'Operation': 'Supression', 'Result': result}
-        pass
-
-    def SuppressEvent(self, supressedActivity, supressedActivityValue):
-        for t_idx, trace in enumerate(self.xesLog):
+    def SuppressEvent(self, xesLog, supressedActivity, supressedActivityValue):
+        for t_idx, trace in enumerate(xesLog):
             # filter out all the events with matching activity values - supressedActivity "concept:name" at event level typically represents the performed activity
             trace[:] = [event for event in trace if event[supressedActivity] != supressedActivityValue]
-        self.AddExtension('Supression', 'Event', 'Event')
+        self.AddExtension(xesLog, 'Supression', 'Event', 'Event')
+        return xesLog
 
-    def SuppressCaseByTraceLength(self, maxLength):
+    def SuppressCaseByTraceLength(self, xesLog, maxLength):
         # Filter for cases with acceptable length
-        self.xesLog[:] = [trace for trace in self.xesLog if len(trace) <= maxLength]
-        self.AddExtension('Supression', 'Case', 'Case')
+        xesLog[:] = [trace for trace in xesLog if len(trace) <= maxLength]
+        self.AddExtension(xesLog, 'Supression', 'Case', 'Case')
+        return xesLog
 
-    def SuppressEventAttribute(self, matchAttribute, matchAttributeValue, supressedAttribute):
-        for case_index, case in enumerate(self.xesLog):
+    def SuppressEventAttribute(self, xesLog, matchAttribute, matchAttributeValue, supressedAttribute):
+        for case_index, case in enumerate(xesLog):
             for event_index, event in enumerate(case):
                 if (event[matchAttribute] == matchAttributeValue):
                     # Only supress resource if activity value is a match
                     event[supressedAttribute] = None
-        self.AddExtension('Supression', 'Event', supressedAttribute)
+        self.AddExtension(xesLog, 'Supression', 'Event', supressedAttribute)
+        return xesLog

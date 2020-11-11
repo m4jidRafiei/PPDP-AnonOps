@@ -3,7 +3,7 @@ from pm4py.objects.log.importer.xes import factory as xes_importer_factory
 from pm4py.objects.log.exporter.xes import factory as xes_exporter
 import hashlib
 from cryptography.fernet import Fernet
-from ppdp_anonops import Condensation, Swapping
+from ppdp_anonops import Condensation, Swapping, Addition
 import base64
 from math import sqrt
 from ppdp_anonops.utils import *
@@ -40,16 +40,18 @@ def main():
 
     tax.PrintTree()
     print('\n\n')
-    dict = tax.GetGeneralizedDict_NodeNameToLevelXParentalName(2)
+    dict = tax.GetGeneralizedDict_NodeNameToDepthXParentalName(2)
     print(dict)
     print('\n\n')
-    dict = tax.GetGeneralizedDict_NodeNameToLevelXParentalName(3)
+    dict = tax.GetGeneralizedDict_NodeNameToDepthXParentalName(3)
     print(dict)
     print('\n\n')
-    dict = tax.GetGeneralizedDict_NodeNameToLevelXParentalName(4)
+    dict = tax.GetGeneralizedDict_NodeNameToDepthXParentalName(4)
     print(dict)
     print('\n\n')
 
+    a = Addition('resources/running_example.xes')
+    print(type(a.xesLog))
 
 # def euclidianDistance(weights, attributesA, attributesB):
 #     if(len(weights) != len(attributesA) != len(attributesB)):

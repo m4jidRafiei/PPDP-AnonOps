@@ -2,31 +2,34 @@ from unittest import TestCase
 import os
 from ppdp_anonops import Generalization
 from ppdp_anonops.utils import TaxonomyTree, TaxonomyTreeNode
+from pm4py.objects.log.importer.xes import factory as xes_importer
 
 
 class TestGeneralization(TestCase):
-    def getTestXesPath(self):
-        return os.path.join(os.path.dirname(__file__), 'resources', 'running_example.xes')
+    def getTestXesLog(self):
+        xesPath = os.path.join(os.path.dirname(__file__), 'resources', 'running_example.xes')
+        return xes_importer.apply(xesPath)
 
     def test_01_generalizationTime(self):
-        s = Generalization(self.getTestXesPath())
+        log = self.getTestXesLog()
+        s = Generalization()
 
-        no_events = sum([len(trace) for trace in s.xesLog])
+        no_events = sum([len(trace) for trace in log])
 
-        s.GeneralizeEventTimeAttribute("time:timestamp", "seconds")
-        self.assertEqual(self.getTime(s.xesLog, "time:timestamp", "seconds"), 0)
+        log = s.GeneralizeEventTimeAttribute(log, "time:timestamp", "seconds")
+        self.assertEqual(self.getTime(log, "time:timestamp", "seconds"), 0)
 
-        s.GeneralizeEventTimeAttribute("time:timestamp", "minutes")
-        self.assertEqual(self.getTime(s.xesLog, "time:timestamp", "minutes"), 0)
+        log = s.GeneralizeEventTimeAttribute(log, "time:timestamp", "minutes")
+        self.assertEqual(self.getTime(log, "time:timestamp", "minutes"), 0)
 
-        s.GeneralizeEventTimeAttribute("time:timestamp", "hours")
-        self.assertEqual(self.getTime(s.xesLog, "time:timestamp", "hours"), 0)
+        log = s.GeneralizeEventTimeAttribute(log, "time:timestamp", "hours")
+        self.assertEqual(self.getTime(log, "time:timestamp", "hours"), 0)
 
-        s.GeneralizeEventTimeAttribute("time:timestamp", "days")
-        self.assertEqual(self.getTime(s.xesLog, "time:timestamp", "days"), 0)
+        log = s.GeneralizeEventTimeAttribute(log, "time:timestamp", "days")
+        self.assertEqual(self.getTime(log, "time:timestamp", "days"), 0)
 
-        s.GeneralizeEventTimeAttribute("time:timestamp", "months")
-        self.assertEqual(self.getTime(s.xesLog, "time:timestamp", "months"), no_events)  # no_events as default value for days is 1 and not 0 (0 is an ivalid day-of-month)
+        log = s.GeneralizeEventTimeAttribute(log, "time:timestamp", "months")
+        self.assertEqual(self.getTime(log, "time:timestamp", "months"), no_events)  # no_events as default value for days is 1 and not 0 (0 is an ivalid day-of-month)
 
     def test_02_generalizationResourceTaxonomy(self):
         tax = TaxonomyTree()
@@ -57,22 +60,23 @@ class TestGeneralization(TestCase):
         n_aerospace = tax.AddNode("Aerospace")
         n_it = tax.AddNode("IT")
 
-        s = Generalization(self.getTestXesPath())
+        log = self.getTestXesLog()
+        s = Generalization()
 
         bCountIT = 0
         bCountSupport = 0
-        for case_index, case in enumerate(s.xesLog):
+        for case_index, case in enumerate(log):
             for event_index, event in enumerate(case):
                 if event["org:resource"] in ["Ellen", "Mike", "Pete"]:
                     bCountIT += 1
                 elif event["org:resource"] in ["Sara", "Sean", "Sue"]:
                     bCountSupport += 1
 
-        s.GeneralizeEventAttributeByTaxonomyTreeDepth("org:resource", tax, 3)
+        log = s.GeneralizeEventAttributeByTaxonomyTreeDepth(log, "org:resource", tax, 3)
 
         aCountIT = 0
         aCountSupport = 0
-        for case_index, case in enumerate(s.xesLog):
+        for case_index, case in enumerate(log):
             for event_index, event in enumerate(case):
                 if event["org:resource"] == "IT":
                     aCountIT += 1
@@ -83,11 +87,12 @@ class TestGeneralization(TestCase):
         self.assertEqual(aCountSupport, bCountSupport, "Before and After count of resources expected does not match")
 
         # Test again with higher level of generalization
-        s = Generalization(self.getTestXesPath())
-        s.GeneralizeEventAttributeByTaxonomyTreeDepth("org:resource", tax, 2)
+        log = self.getTestXesLog()
+        s = Generalization()
+        log = s.GeneralizeEventAttributeByTaxonomyTreeDepth(log, "org:resource", tax, 2)
 
         aCountInsurance = 0
-        for case_index, case in enumerate(s.xesLog):
+        for case_index, case in enumerate(log):
             for event_index, event in enumerate(case):
                 if event["org:resource"] == "Insurance":
                     aCountInsurance += 1

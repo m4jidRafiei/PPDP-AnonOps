@@ -1,27 +1,31 @@
 from unittest import TestCase
 import os
 from ppdp_anonops import Condensation
+from pm4py.objects.log.importer.xes import factory as xes_importer
 
 
 class TestCondensation(TestCase):
-    def getTestXesPath(self):
-        return os.path.join(os.path.dirname(__file__), 'resources', 'Sepsis Cases - Event Log.xes')
+    def getTestXesLog(self):
+        xesPath = os.path.join(os.path.dirname(__file__), 'resources', 'Sepsis Cases - Event Log.xes')
+        return xes_importer.apply(xesPath)
 
     def test_eventLevelCondensation(self):
         for clusters in range(4, 7):
-            s = Condensation(self.getTestXesPath())
+            log = self.getTestXesLog()
+
+            s = Condensation()
 
             # Needs to be a numeric attribute
             matchAttribute = "CRP"
 
-            s.CondenseEventAttributeBykMeanClusterMode(matchAttribute, clusters)
+            log = s.CondenseEventAttributeBykMeanClusterMode(log, matchAttribute, clusters)
 
-            self.assertEqual(self.__getNumberOfDistinctEventAttributeValues(s, matchAttribute), clusters)
+            self.assertEqual(self.__getNumberOfDistinctEventAttributeValues(log, matchAttribute), clusters)
 
-    def __getNumberOfDistinctEventAttributeValues(self, s, attribute):
+    def __getNumberOfDistinctEventAttributeValues(self, xesLog, attribute):
         values = []
 
-        for case_index, case in enumerate(s.xesLog):
+        for case_index, case in enumerate(xesLog):
             for event_index, event in enumerate(case):
                 if(attribute in event.keys() and event[attribute] not in values):
                     values.append(event[attribute])

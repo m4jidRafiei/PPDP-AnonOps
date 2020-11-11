@@ -7,16 +7,14 @@ from datetime import timedelta
 class Addition(AnonymizationOperationInterface):
     """Extract text from a PDF."""
 
-    def __init__(self, xesLogPath):
-        super(Addition, self).__init__(xesLogPath)
+    def __init__(self):
+        super(Addition, self).__init__()
 
+    # give user opportunity to design the newly added event! (06.11.20 / Meeting with Majid)
 
-# give user opportunity to design the newly added event! (06.11.20 / Meeting with Majid)
-
-
-    def AddEvent(self, matchAttribute, matchAttributeValue):
+    def AddEvent(self, xesLog, matchAttribute, matchAttributeValue):
         # event based not case based
-        for case_index, case in enumerate(self.xesLog):
+        for case_index, case in enumerate(xesLog):
             traceLength = len(case)
             firstCase = case[0]
             lastCase = case[traceLength - 1]
@@ -29,8 +27,8 @@ class Addition(AnonymizationOperationInterface):
                 newEvent["time:timestamp"] = newEvent["time:timestamp"] + timedelta(seconds=secDelta)
 
                 case.append(newEvent)
-        self.AddExtension("add", "case", "trace")
-
+        self.AddExtension(xesLog, "add", "case", "trace")
+        return xesLog
     # def addEventAtRandomPlaceInTrace(self):
     # def addEventFirstInTrace(self):
     # def addEventLastInTrace(self):

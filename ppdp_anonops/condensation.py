@@ -13,14 +13,14 @@ import numbers
 
 class Condensation(AnonymizationOperationInterface):
 
-    def __init__(self, xesLogPath):
-        super(Condensation, self).__init__(xesLogPath)
+    def __init__(self):
+        super(Condensation, self).__init__()
 
     # Possibly realize by k-means clustering
     # def condenseNumericalAttribute(self, sensitiveAttribute):
 
-    def CondenseEventAttributeBykMeanClusterMode(self, sensitiveAttribute, k_clusters):
-        values = self._getEventAttributeValues(sensitiveAttribute)
+    def CondenseEventAttributeBykMeanClusterMode(self, xesLog, sensitiveAttribute, k_clusters):
+        values = self._getEventAttributeValues(xesLog, sensitiveAttribute)
 
         self.__checkNumericAttributes(values)
 
@@ -29,15 +29,17 @@ class Condensation(AnonymizationOperationInterface):
         valueClusterDict, clusterMode = self.__getClusterHelpers(kmeans, values)
 
         # Apply clustered data mode to log
-        for case_index, case in enumerate(self.xesLog):
+        for case_index, case in enumerate(xesLog):
             for event_index, event in enumerate(case):
                 if(sensitiveAttribute in event.keys()):
                     event[sensitiveAttribute] = clusterMode[valueClusterDict[event[sensitiveAttribute]]]
         print(clusterMode)
-        self.AddExtension('con', 'event', sensitiveAttribute)
+        self.AddExtension(xesLog, 'con', 'event', sensitiveAttribute)
 
-    def CondenseCaseAttributeUsingMode(self, sensitiveAttribute, k_clusters):
-        values = self._getCaseAttributeValues(sensitiveAttribute)
+        return xesLog
+
+    def CondenseCaseAttributeUsingMode(self, xesLog, sensitiveAttribute, k_clusters):
+        values = self._getCaseAttributeValues(xesLog, sensitiveAttribute)
 
         self.__checkNumericAttributes(values)
 
@@ -46,11 +48,13 @@ class Condensation(AnonymizationOperationInterface):
         valueClusterDict, clusterMode = self.__getClusterHelpers(kmeans, values)
 
         # Apply clustered data mode to log
-        for case_index, case in enumerate(self.xesLog):
+        for case_index, case in enumerate(xesLog):
             if(sensitiveAttribute in case.keys()):
                 case[sensitiveAttribute] = clusterMode[valueClusterDict[case[sensitiveAttribute]]]
 
-        self.AddExtension('con', 'case', sensitiveAttribute)
+        self.AddExtension(xesLog, 'con', 'case', sensitiveAttribute)
+
+        return xesLog
 
     def __getMode(self, valueList):
         if len(valueList) == 0:
