@@ -34,9 +34,7 @@ class Condensation(AnonymizationOperationInterface):
                 if(sensitiveAttribute in event.keys()):
                     event[sensitiveAttribute] = clusterMode[valueClusterDict[event[sensitiveAttribute]]]
         print(clusterMode)
-        self.AddExtension(xesLog, 'con', 'event', sensitiveAttribute)
-
-        return xesLog
+        return self.AddExtension(xesLog, 'con', 'event', sensitiveAttribute)
 
     def CondenseCaseAttributeUsingMode(self, xesLog, sensitiveAttribute, k_clusters):
         values = self._getCaseAttributeValues(xesLog, sensitiveAttribute)
@@ -52,9 +50,7 @@ class Condensation(AnonymizationOperationInterface):
             if(sensitiveAttribute in case.keys()):
                 case[sensitiveAttribute] = clusterMode[valueClusterDict[case[sensitiveAttribute]]]
 
-        self.AddExtension(xesLog, 'con', 'case', sensitiveAttribute)
-
-        return xesLog
+        return self.AddExtension(xesLog, 'con', 'case', sensitiveAttribute)
 
     def __getMode(self, valueList):
         if len(valueList) == 0:

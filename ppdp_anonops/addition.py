@@ -27,7 +27,7 @@ class Addition(AnonymizationOperationInterface):
             lastEvent = case[traceLength - 1]
 
             # Either no attribute match is required or the lastEvent is a match
-            isMatch = (matchAttribute in ('', None) and matchAttributeValue in ('', None)) or (lastEvent[matchAttribute] == matchAttributeValue)
+            isMatch = (matchAttribute in ('', None) and matchAttributeValue in ('', None)) or (matchAttribute in lastEvent.keys() and lastEvent[matchAttribute] == matchAttributeValue)
 
             if(isMatch):
                 newPos = position

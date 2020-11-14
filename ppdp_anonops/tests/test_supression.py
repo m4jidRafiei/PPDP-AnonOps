@@ -50,7 +50,7 @@ class TestSupression(TestCase):
         self.assertEqual(counter, 0)
 
         # Supress resource if activity matches 'reinitiate request'
-        log = s.SuppressEventAttribute(log, "concept:name", "reinitiate request", "org:resource")
+        log = s.SuppressEventAttribute(log, supressedAttribute, matchAttribute, matchAttributeValue)
 
         no_traces = len(log)
         no_events = sum([len(trace) for trace in log])

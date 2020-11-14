@@ -11,18 +11,12 @@ class Substitution(AnonymizationOperationInterface):
         insensitiveAttributes = []
         for case_index, case in enumerate(xesLog):
             for event_index, event in enumerate(case):
-                if event[matchAttribute] not in insensitiveAttributes and event[matchAttribute] not in sensitiveAttributeValues:
+                if (matchAttribute in event.keys() and event[matchAttribute] not in insensitiveAttributes and event[matchAttribute] not in sensitiveAttributeValues):
                     insensitiveAttributes.append(event[matchAttribute])
-
-        print(*insensitiveAttributes, sep=", ")
-        print(*sensitiveAttributeValues, sep=", ")
 
         for case_index, case in enumerate(xesLog):
             for event_index, event in enumerate(case):
-                if (event[matchAttribute] in sensitiveAttributeValues):
+                if (matchAttribute in event.keys() and event[matchAttribute] in sensitiveAttributeValues):
                     event[matchAttribute] = insensitiveAttributes[random.randint(0, len(insensitiveAttributes) - 1)]
-                    print("Treffer")
 
-        self.AddExtension(xesLog, 'sub', 'Event', matchAttribute)
-
-        return xesLog
+        return self.AddExtension(xesLog, 'sub', 'Event', matchAttribute)
