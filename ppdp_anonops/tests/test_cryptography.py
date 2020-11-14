@@ -20,16 +20,16 @@ class TestCryptography(TestCase):
         frequency = []
         for case_index, case in enumerate(log):
             for event_index, event in enumerate(case):
-                if event["org:resource"] not in frequency:
-                    frequency.append(event["org:resource"])
+                if event[targetAttribute] not in frequency:
+                    frequency.append(event[targetAttribute])
 
         log = s.HashEventAttribute(log, targetAttribute)
 
         frequencyNew = []
         for case_index, case in enumerate(log):
             for event_index, event in enumerate(case):
-                if event["org:resource"] not in frequencyNew:
-                    frequencyNew.append(event["org:resource"])
+                if event[targetAttribute] not in frequencyNew:
+                    frequencyNew.append(event[targetAttribute])
 
         self.assertEqual(len(frequency), 6)
         self.assertEqual(len(frequencyNew), 6)

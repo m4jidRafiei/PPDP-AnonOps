@@ -25,9 +25,7 @@ class Cryptography(AnonymizationOperationInterface):
                 if(isMatch and targetedAttribute in event.keys()):
                     # Only supress resource if activity value is a match
                     h = hashlib.new(hashAlgo)
-
-                    h.update((self.cryptoSalt + event[targetedAttribute]).encode('utf-8'))
-                    # print((self.cryptoSalt + event[targetedAttribute]).encode('utf-8'))
+                    h.update((self.cryptoSalt + str(event[targetedAttribute])).encode('utf-8'))
                     event[targetedAttribute] = h.hexdigest()
 
         self.AddExtension(xesLog, 'Cryptography', 'Event', targetedAttribute)
@@ -42,7 +40,7 @@ class Cryptography(AnonymizationOperationInterface):
 
                 if(isMatch and targetedAttribute in event.keys()):
                     cipher = AES.new(self.cryptoKey, AES.MODE_CBC, iv=self.cryptoIV)
-                    event[targetedAttribute] = cipher.encrypt(pad(event[targetedAttribute].encode('utf-8'), AES.block_size)).hex()
+                    event[targetedAttribute] = cipher.encrypt(pad(str(event[targetedAttribute]).encode('utf-8'), AES.block_size)).hex()
 
         self.AddExtension(xesLog, 'Cryptography', 'Event', targetedAttribute)
 
@@ -56,7 +54,7 @@ class Cryptography(AnonymizationOperationInterface):
             isMatch = matchAttribute in (None, '') or (matchAttribute in case.keys() and case[matchAttribute] == matchAttributeValue)
 
             if(isMatch and targetedAttribute in case.keys()):
-                h.update((self.cryptoSalt + case[targetedAttribute]).encode('utf-8'))
+                h.update((self.cryptoSalt + str(case[targetedAttribute])).encode('utf-8'))
                 case[targetedAttribute] = h.hexdigest()
 
         self.AddExtension(xesLog, 'Cryptography', 'Case', targetedAttribute)
@@ -70,7 +68,7 @@ class Cryptography(AnonymizationOperationInterface):
 
             if(isMatch and targetedAttribute in case.keys()):
                 cipher = AES.new(self.cryptoKey, AES.MODE_CBC, iv=self.cryptoIV)
-                case[targetedAttribute] = cipher.encrypt(pad(case[targetedAttribute].encode('utf-8'), AES.block_size)).hex()
+                case[targetedAttribute] = cipher.encrypt(pad(str(case[targetedAttribute]).encode('utf-8'), AES.block_size)).hex()
 
         self.AddExtension(xesLog, 'Cryptography', 'Case', targetedAttribute)
 
