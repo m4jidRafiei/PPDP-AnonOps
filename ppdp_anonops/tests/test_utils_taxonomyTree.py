@@ -6,7 +6,7 @@ import sys
 
 
 class Test_Utils_TaxonomyTree(TestCase):
-    def _generateTestTree(self):
+    def __generateTestTree(self):
         tax = TaxonomyTree()
         n_healthcare = tax.AddNode("Healthcare")
 
@@ -37,22 +37,32 @@ class Test_Utils_TaxonomyTree(TestCase):
 
         return tax
 
+    def __getTreeJson(self):
+        return '[{"text":"Klinik","icon":true,"data":false,"children":[{"id":"j1_3","text":"Buchhaltung","icon":true,"data":false,"children":[],"type":"default"},{"id":"j1_2","text":"IT","icon":true,"data":false,"children":[{"id":"j1_5","text":"R&D","icon":true,"data":false,"children":[],"type":"default"},{"id":"j1_4","text":"Support","icon":true,"data":false,"children":[],"type":"default"}],"type":"default"}],"type":"default"}]'
+
     def test_01_CreateTree(self):
-        tax = self._generateTestTree()
+        tax = self.__generateTestTree()
         self.assertEqual(len(tax.RootNode.Children), 3)
 
     def test_02_SearchTree(self):
-        tax = self._generateTestTree()
+        tax = self.__generateTestTree()
         self.assertFalse(True, 'IMPLEMENT SEARCH OPERATIONS!')
         pass
 
     def test_03_ImportTree(self):
-        tax = self._generateTestTree()
-        self.assertFalse(True, 'IMPLEMENT IMPORT/EXPORT OPERATIONS!')
-        pass
+        tree = TaxonomyTree.CreateFromJSON(self.__getTreeJson(), "text", "children")
+
+        node = tree.GetNodeByName("R&D")
+        self.assertIsNotNone(node, "R&D node not found")
+        self.assertEqual(node.GetNodePath(), "ROOT/Klinik/IT/R&D")
+
+        node = tree.GetNodeByName("IT")
+        self.assertIsNotNone(node, "IT node not found")
+        self.assertEqual(node.GetNodePath(), "ROOT/Klinik/IT")
+        self.assertEqual(len(node.Children), 2)
 
     def test_04_TreeAsDictByLevel(self):
-        tax = self._generateTestTree()
+        tax = self.__generateTestTree()
 
         # All nodes below level 2 get generalized to level 2 names
         dict = tax.GetGeneralizedDict_NodeNameToDepthXParentalName(2)

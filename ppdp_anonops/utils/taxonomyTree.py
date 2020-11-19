@@ -1,3 +1,6 @@
+import json
+
+
 class TaxonomyTree:
     def __init__(self):
         self.RootNode = TaxonomyTreeNode("ROOT", None)
@@ -21,6 +24,21 @@ class TaxonomyTree:
     def PrintTree(self):
         self.RootNode.Print()
 
+    @staticmethod
+    def CreateFromJSON(jsonData, nameAttribute, childrenAttribute):
+        nodeTree = json.loads(jsonData)
+        tree = TaxonomyTree()
+
+        tree.__jsonImport_CreateChildrenRecursively(tree.RootNode, nodeTree, nameAttribute, childrenAttribute)
+
+        return tree
+
+    def __jsonImport_CreateChildrenRecursively(self, parentNode, nodeTree, nameAttribute, childrenAttribute):
+        for node in nodeTree:
+            child = parentNode.AddChildNode(node[nameAttribute])
+            if(len(node[childrenAttribute]) > 0):
+                self.__jsonImport_CreateChildrenRecursively(child, node[childrenAttribute], nameAttribute, childrenAttribute)
+
 
 class TaxonomyTreeNode:
     def __init__(self, nodeName: str, parent: 'TaxonomyTreeNode'):  # String type required for Py 3.5 as recursive typing isn't supportes yet...really?!
@@ -36,7 +54,7 @@ class TaxonomyTreeNode:
 
     def GetNodePath(self):
         if self.Parent is not None:
-            return self.Parent.getNodePath() + '/' + self.Name
+            return self.Parent.GetNodePath() + '/' + self.Name
         else:
             return self.Name
 
@@ -46,7 +64,7 @@ class TaxonomyTreeNode:
                 if c.Name == name:
                     return c
                 else:
-                    r = c.getChildByName(name)
+                    r = c.GetChildByName(name)
                     if r is not None:
                         return r
         return None

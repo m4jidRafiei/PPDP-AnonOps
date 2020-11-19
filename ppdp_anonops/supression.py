@@ -9,10 +9,10 @@ class Supression(AnonymizationOperationInterface):
     def __init__(self):
         super(Supression, self).__init__()
 
-    def SuppressEvent(self, xesLog, supressedActivity, supressedActivityValue):
+    def SuppressEvent(self, xesLog, matchAttribute, matchAttributeValue):
         for t_idx, trace in enumerate(xesLog):
-            # filter out all the events with matching activity values - supressedActivity "concept:name" at event level typically represents the performed activity
-            trace[:] = [event for event in trace if event[supressedActivity] != supressedActivityValue]
+            # filter out all the events with matching attribute values - matchAttribute "concept:name" at event level typically represents the performed activity
+            trace[:] = [event for event in trace if event[matchAttribute] != matchAttributeValue]
         return self.AddExtension(xesLog, 'Supression', 'Event', 'Event')
 
     def SuppressCaseByTraceLength(self, xesLog, maxLength):
