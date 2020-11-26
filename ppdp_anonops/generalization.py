@@ -17,7 +17,7 @@ class Generalization(AnonymizationOperationInterface):
                     if event[sensitiveAttribute] in taxDict.keys():
                         event[sensitiveAttribute] = taxDict[event[sensitiveAttribute]]
 
-        return self.AddExtension(xesLog, 'Generalization', 'Event', sensitiveAttribute)
+        return self.AddExtension(xesLog, 'gen', 'event', sensitiveAttribute)
 
     def GeneralizeCaseAttributeByTaxonomyTreeDepth(self, xesLog, sensitiveAttribute, taxonomyTree, depth):
         taxDict = taxonomyTree.GetGeneralizedDict_NodeNameToDepthXParentalName(depth)
@@ -28,7 +28,7 @@ class Generalization(AnonymizationOperationInterface):
                 if case[sensitiveAttribute] in taxDict.keys():
                     case[sensitiveAttribute] = taxDict[case[sensitiveAttribute]]
 
-        return self.AddExtension(xesLog, 'Generalization', 'Case', sensitiveAttribute)
+        return self.AddExtension(xesLog, 'gen', 'case', sensitiveAttribute)
 
     def GeneralizeEventTimeAttribute(self, xesLog, dateTimeAttribute, generalizationLevel):
         for case_index, case in enumerate(xesLog):
@@ -52,4 +52,4 @@ class Generalization(AnonymizationOperationInterface):
                     if(generalizationLevel == "years"):
                         event[dateTimeAttribute] = event[dateTimeAttribute].replace(microsecond=0, second=0, minute=0, hour=0, day=1, month=1)
 
-        return self.AddExtension(xesLog, 'Generalization', 'Event', dateTimeAttribute)
+        return self.AddExtension(xesLog, 'gen', 'event', dateTimeAttribute)

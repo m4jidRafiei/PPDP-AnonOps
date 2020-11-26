@@ -30,7 +30,7 @@ class Cryptography(AnonymizationOperationInterface):
                     h.update((self.cryptoSalt + str(event[targetedAttribute])).encode('utf-8'))
                     event[targetedAttribute] = h.hexdigest()
 
-        return self.AddExtension(xesLog, 'Cryptography', 'Event', targetedAttribute)
+        return self.AddExtension(xesLog, 'cry', 'event', targetedAttribute)
 
     def EncryptEventAttribute(self, xesLog, targetedAttribute, matchAttribute=None, matchAttributeValue=None):
         for case_index, case in enumerate(xesLog):
@@ -42,7 +42,7 @@ class Cryptography(AnonymizationOperationInterface):
                     cipher = AES.new(self.cryptoKey, AES.MODE_CBC, iv=self.cryptoIV)
                     event[targetedAttribute] = cipher.encrypt(pad(str(event[targetedAttribute]).encode('utf-8'), AES.block_size)).hex()
 
-        return self.AddExtension(xesLog, 'Cryptography', 'Event', targetedAttribute)
+        return self.AddExtension(xesLog, 'cry', 'event', targetedAttribute)
 
     def HashCaseAttribute(self, xesLog, targetedAttribute, matchAttribute=None, matchAttributeValue=None, hashAlgo='ripemd160'):
         h = hashlib.new(hashAlgo)
@@ -55,7 +55,7 @@ class Cryptography(AnonymizationOperationInterface):
                 h.update((self.cryptoSalt + str(case[targetedAttribute])).encode('utf-8'))
                 case[targetedAttribute] = h.hexdigest()
 
-        return self.AddExtension(xesLog, 'Cryptography', 'Case', targetedAttribute)
+        return self.AddExtension(xesLog, 'cry', 'case', targetedAttribute)
 
     def EncryptCaseAttribute(self, xesLog, targetedAttribute, matchAttribute=None, matchAttributeValue=None):
         for case_index, case in enumerate(xesLog):
@@ -66,4 +66,4 @@ class Cryptography(AnonymizationOperationInterface):
                 cipher = AES.new(self.cryptoKey, AES.MODE_CBC, iv=self.cryptoIV)
                 case[targetedAttribute] = cipher.encrypt(pad(str(case[targetedAttribute]).encode('utf-8'), AES.block_size)).hex()
 
-        return self.AddExtension(xesLog, 'Cryptography', 'Case', targetedAttribute)
+        return self.AddExtension(xesLog, 'cry', 'case', targetedAttribute)
