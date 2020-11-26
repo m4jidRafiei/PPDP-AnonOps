@@ -6,6 +6,8 @@ from Crypto.Util.Padding import pad
 from Crypto.Random import get_random_bytes
 from base64 import b64encode
 
+import time
+
 
 class Cryptography(AnonymizationOperationInterface):
     """Extract text from a PDF."""

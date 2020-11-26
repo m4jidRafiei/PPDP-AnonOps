@@ -10,6 +10,9 @@ class TestAddition(TestCase):
         xesPath = os.path.join(os.path.dirname(__file__), 'resources', 'running_example.xes')
         return xes_importer.apply(xesPath)
 
+    def getMatchLambda(self):  # Match last event in trace
+        return (lambda t, a, v: len(t) > 0 and a in t[-1].keys() and t[-1][a] == v)
+
     def getTestEventTemplate(self):
         return [
             {'Name': 'concept:name', 'Value': 'Another Test'},
@@ -30,7 +33,7 @@ class TestAddition(TestCase):
         self.__checkLogProperties(log, noCases=6, noEvents=42)
 
         eventTemplate = self.getTestEventTemplate()
-        log = s.AddEventLastInTrace(log, eventTemplate, matchAttribute, matchAttributeValue, doNotUseRandomlyGeneratedTimestamp=False)
+        log = s.AddEventLastInTrace(log, eventTemplate, matchAttribute, matchAttributeValue, self.getMatchLambda(), doNotUseRandomlyGeneratedTimestamp=False)
 
         self.__checkTimestampContinuity(log)
         self.__checkLogProperties(log, noCases=6, noEvents=45)
@@ -52,7 +55,7 @@ class TestAddition(TestCase):
         self.__checkLogProperties(log, noCases=6, noEvents=42)
 
         eventTemplate = self.getTestEventTemplate()
-        log = s.AddEventFirstInTrace(log, eventTemplate, matchAttribute, matchAttributeValue, doNotUseRandomlyGeneratedTimestamp=False)
+        log = s.AddEventFirstInTrace(log, eventTemplate, matchAttribute, matchAttributeValue, self.getMatchLambda(), doNotUseRandomlyGeneratedTimestamp=False)
 
         self.__checkTimestampContinuity(log)
         self.__checkLogProperties(log, noCases=6, noEvents=45)
