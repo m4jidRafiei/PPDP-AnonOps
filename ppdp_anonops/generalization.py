@@ -8,25 +8,33 @@ class Generalization(AnonymizationOperationInterface):
         super(Generalization, self).__init__()
 
     def GeneralizeEventAttributeByTaxonomyTreeDepth(self, xesLog, sensitiveAttribute, taxonomyTree, depth):
-        taxDict = taxonomyTree.GetGeneralizedDict_NodeNameToDepthXParentalName(depth)
+        taxDict = taxonomyTree.GetPathDict_NodeNamesUntilLeaf()
 
         # Replace all attribute values below 'depth' in the taxTree with their generalized parental value
         for case_index, case in enumerate(xesLog):
             for event_index, event in enumerate(case):
                 if sensitiveAttribute in event.keys():
                     if event[sensitiveAttribute] in taxDict.keys():
-                        event[sensitiveAttribute] = taxDict[event[sensitiveAttribute]]
+                        idx = -depth
+                        if(depth >= len(taxDict[event[sensitiveAttribute]])):
+                            idx = 0
+
+                        event[sensitiveAttribute] = taxDict[event[sensitiveAttribute]][idx]
 
         return self.AddExtension(xesLog, 'gen', 'event', sensitiveAttribute)
 
     def GeneralizeCaseAttributeByTaxonomyTreeDepth(self, xesLog, sensitiveAttribute, taxonomyTree, depth):
-        taxDict = taxonomyTree.GetGeneralizedDict_NodeNameToDepthXParentalName(depth)
+        taxDict = taxonomyTree.GetPathDict_NodeNamesUntilLeaf()
 
         # Replace all attribute values below 'depth' in the taxTree with their generalized parental value
         for case_index, case in enumerate(xesLog):
             if sensitiveAttribute in case.keys():
                 if case[sensitiveAttribute] in taxDict.keys():
-                    case[sensitiveAttribute] = taxDict[case[sensitiveAttribute]]
+                    idx = -depth
+                    if(depth >= len(taxDict[case[sensitiveAttribute]])):
+                        idx = 0
+
+                    case[sensitiveAttribute] = taxDict[case[sensitiveAttribute]][idx]
 
         return self.AddExtension(xesLog, 'gen', 'case', sensitiveAttribute)
 

@@ -1,1 +1,2 @@
-pip install p-privacy-qt
+p-privacy-qt
+sklearn-0.0

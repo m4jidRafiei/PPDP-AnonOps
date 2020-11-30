@@ -82,3 +82,21 @@ class Test_Utils_TaxonomyTree(TestCase):
         dict = tax.GetGeneralizedDict_NodeNameToDepthXParentalName(4)
         self.assertEqual(len(dict.keys()), 0)
         pass
+
+    def test_05_TreeAsDictLeafPath(self):
+        tax = self.__generateTestTree()
+
+        # All nodes below level 2 get generalized to level 2 names
+        dict = tax.GetPathDict_NodeNamesUntilLeaf()
+
+        self.assertTrue('Healthcare' in dict.keys())
+        self.assertTrue('Hospital' in dict.keys())
+        self.assertTrue('Bookkeeping' in dict.keys())
+        self.assertTrue('Sean' in dict.keys())
+
+        self.assertTrue(len(dict['Healthcare']) == 1 and dict['Healthcare'][-1] == 'Healthcare' and dict['Healthcare'][0] == 'Healthcare')
+        self.assertTrue(len(dict['Hospital']) == 2 and dict['Hospital'][-1] == 'Hospital' and dict['Hospital'][0] == 'Healthcare')
+        self.assertTrue(len(dict['Bookkeeping']) == 3 and dict['Bookkeeping'][-1] == 'Bookkeeping' and dict['Bookkeeping'][0] == 'Healthcare')
+        self.assertTrue(len(dict['Sean']) == 4 and dict['Sean'][-1] == 'Sean' and dict['Sean'][0] == 'Healthcare')
+
+        pass

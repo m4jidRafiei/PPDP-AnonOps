@@ -1,5 +1,5 @@
 
-from pm4py.objects.log.importer.xes import factory as xes_importer_factory
+from pm4py.objects.log.importer.xes import factory as xes_importer
 from pm4py.objects.log.exporter.xes import factory as xes_exporter
 import hashlib
 from cryptography.fernet import Fernet
@@ -7,6 +7,7 @@ from ppdp_anonops import Condensation, Swapping, Addition
 import base64
 from math import sqrt
 from ppdp_anonops.utils import *
+from sklearn.cluster import KMeans
 
 # running_example.xes
 # Traces: 6
@@ -14,55 +15,56 @@ from ppdp_anonops.utils import *
 import numpy as np
 from kmodes.kmodes import KModes
 
+from sklearn.preprocessing import OneHotEncoder
+
 
 def main():
-    tax = TaxonomyTree()
-    n_healthcare = tax.AddNode("Healthcare")
+    log = xes_importer.apply("resources/Sepsis Cases - Event Log.xes")
 
-    n_hospital = n_healthcare.AddChildNode("Hospital")
-    n_surgery = n_hospital.AddChildNode("Surgery")
-    n_surgery.AddChildNode("Surgeon")
-    n_surgery.AddChildNode("Anesthesist")
-    n_surgery.AddChildNode("Caretaker")
-    n_diagnostic = n_hospital.AddChildNode("Diagnostic")
-    n_diagnostic.AddChildNode("Internist")
-    n_diagnostic.AddChildNode("Pharmacist")
-    n_diagnostic.AddChildNode("Caretaker")
+    vals = []
+    for case_index, case in enumerate(log):
+        for eIdx, e in enumerate(case):
+            if(e["concept:name"] not in vals):
+                vals.append(e["concept:name"])
 
-    n_insurance = n_healthcare.AddChildNode("Insurance")
-    n_insurance.AddChildNode("Bookkeeping")
-    n_insurance.AddChildNode("IT")
-    n_insurance.AddChildNode("Consulting")
-    n_insurance.AddChildNode("Support")
+    enc = OneHotEncoder(handle_unknown='ignore')
+    vals = np.array(vals).reshape(-1, 1)
+    enc.fit(vals)
 
-    n_aerospace = tax.AddNode("Aerospace")
-    n_it = tax.AddNode("IT")
+    encDict = {}
+    decDict = {}
+    data = enc.transform(vals).toarray()
+    cat = enc.categories_[0]
+    for i in range(len(cat)):
+        encDict[cat[i]] = data[i]
+        #decDict[data[i]] = cat[i]
 
-    tax.PrintTree()
-    print('\n\n')
-    dict = tax.GetGeneralizedDict_NodeNameToDepthXParentalName(2)
-    print(dict)
-    print('\n\n')
-    dict = tax.GetGeneralizedDict_NodeNameToDepthXParentalName(3)
-    print(dict)
-    print('\n\n')
-    dict = tax.GetGeneralizedDict_NodeNameToDepthXParentalName(4)
-    print(dict)
-    print('\n\n')
+    print(encDict)
+    print('###############')
+    print(decDict)
 
-    a = Addition('resources/running_example.xes')
-    print(type(a.xesLog))
+    # initialize KMeans object specifying the number of desired clusters
+    kmeans = KMeans(n_clusters=5)
 
-# def euclidianDistance(weights, attributesA, attributesB):
-#     if(len(weights) != len(attributesA) != len(attributesB)):
-#         # raise
+    # reshape data to make them clusterable
+    readyData = data  # np.array(data).reshape(-1, 1)
 
-#     sum = 0
+    # learning the clustering from the input date
+    kmeans.fit(readyData)
 
-#     for i in range(len(weights)):
-#         sum += weights[i] * ((attributesA[i] - attributesB[i]) ** 2)
+    print(kmeans.labels_)
 
-#     return sqrt(sum)
+
+def euclidianDistance(weights, attributesA, attributesB):
+    if(len(weights) != len(attributesA) != len(attributesB)):
+        raise NotImplementedError("This feature is only available for input arrays of identical length")
+
+    sum = 0
+
+    for i in range(len(weights)):
+        sum += weights[i] * ((attributesA[i] - attributesB[i]) ** 2)
+
+    return sqrt(sum)
 
 
 def getAttr(xes_log):

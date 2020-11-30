@@ -19,4 +19,4 @@ class Substitution(AnonymizationOperationInterface):
                 if (targetAttribute in event.keys() and event[targetAttribute] in sensitiveAttributeValues):
                     event[targetAttribute] = insensitiveAttributes[random.randint(0, len(insensitiveAttributes) - 1)]
 
-        return self.AddExtension(xesLog, 'sub', 'Event', targetAttribute)
+        return self.AddExtension(xesLog, 'sub', 'event', targetAttribute)

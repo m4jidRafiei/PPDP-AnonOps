@@ -21,6 +21,26 @@ class TaxonomyTree:
             raise NotImplementedError("Unable to perform negative level generalization")
         return self.RootNode.__generalizeNodesByNameDict__(depthX, 0)
 
+    def GetPathDict_NodeNamesUntilLeaf(self, node=None):
+        if(node is None):
+            node = self.RootNode
+
+        pathDict = {}
+
+        path = node.GetNodePath()
+        if('/' in path):
+            pArr = path.split('/')
+            pathDict[pArr[-1]] = pArr[1:]
+
+        if len(node.Children) > 0:
+            for c in node.Children:
+                childDict = self.GetPathDict_NodeNamesUntilLeaf(c)
+
+                # Merge dictionaries
+                pathDict = {**pathDict, **childDict}
+
+        return pathDict
+
     def PrintTree(self):
         self.RootNode.Print()
 
