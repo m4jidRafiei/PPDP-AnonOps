@@ -8,6 +8,7 @@ class Generalization(AnonymizationOperationInterface):
         super(Generalization, self).__init__()
 
     def GeneralizeEventAttributeByTaxonomyTreeDepth(self, xesLog, sensitiveAttribute, taxonomyTree, depth):
+        depth = int(depth)
         taxDict = taxonomyTree.GetPathDict_NodeNamesUntilLeaf()
 
         # Replace all attribute values below 'depth' in the taxTree with their generalized parental value
@@ -24,6 +25,7 @@ class Generalization(AnonymizationOperationInterface):
         return self.AddExtension(xesLog, 'gen', 'event', sensitiveAttribute)
 
     def GeneralizeCaseAttributeByTaxonomyTreeDepth(self, xesLog, sensitiveAttribute, taxonomyTree, depth):
+        depth = int(depth)
         taxDict = taxonomyTree.GetPathDict_NodeNamesUntilLeaf()
 
         # Replace all attribute values below 'depth' in the taxTree with their generalized parental value
@@ -39,25 +41,27 @@ class Generalization(AnonymizationOperationInterface):
         return self.AddExtension(xesLog, 'gen', 'case', sensitiveAttribute)
 
     def GeneralizeEventTimeAttribute(self, xesLog, dateTimeAttribute, generalizationLevel):
+        level = generalizationLevel.lower()
+
         for case_index, case in enumerate(xesLog):
             for event_index, event in enumerate(case):
                 if(dateTimeAttribute in event.keys()):
-                    if(generalizationLevel == "seconds"):
+                    if(level == "seconds"):
                         event[dateTimeAttribute] = event[dateTimeAttribute].replace(microsecond=0)
 
-                    if(generalizationLevel == "minutes"):
+                    if(level == "minutes"):
                         event[dateTimeAttribute] = event[dateTimeAttribute].replace(microsecond=0, second=0)
 
-                    if(generalizationLevel == "hours"):
+                    if(level == "hours"):
                         event[dateTimeAttribute] = event[dateTimeAttribute].replace(microsecond=0, second=0, minute=0)
 
-                    if(generalizationLevel == "days"):
+                    if(level == "days"):
                         event[dateTimeAttribute] = event[dateTimeAttribute].replace(microsecond=0, second=0, minute=0, hour=0)
 
-                    if(generalizationLevel == "months"):
+                    if(level == "months"):
                         event[dateTimeAttribute] = event[dateTimeAttribute].replace(microsecond=0, second=0, minute=0, hour=0, day=1)
 
-                    if(generalizationLevel == "years"):
+                    if(level == "years"):
                         event[dateTimeAttribute] = event[dateTimeAttribute].replace(microsecond=0, second=0, minute=0, hour=0, day=1, month=1)
 
         return self.AddExtension(xesLog, 'gen', 'event', dateTimeAttribute)
