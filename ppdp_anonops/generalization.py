@@ -30,13 +30,13 @@ class Generalization(AnonymizationOperationInterface):
 
         # Replace all attribute values below 'depth' in the taxTree with their generalized parental value
         for case_index, case in enumerate(xesLog):
-            if sensitiveAttribute in case.keys():
-                if case[sensitiveAttribute] in taxDict.keys():
+            if sensitiveAttribute in case.attributes.keys():
+                if case.attributes[sensitiveAttribute] in taxDict.keys():
                     idx = -depth
-                    if(depth >= len(taxDict[case[sensitiveAttribute]])):
+                    if(depth >= len(taxDict[case.attributes[sensitiveAttribute]])):
                         idx = 0
 
-                    case[sensitiveAttribute] = taxDict[case[sensitiveAttribute]][idx]
+                    case.attributes[sensitiveAttribute] = taxDict[case.attributes[sensitiveAttribute]][idx]
 
         return self.AddExtension(xesLog, 'gen', 'case', sensitiveAttribute)
 

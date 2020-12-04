@@ -49,21 +49,21 @@ class Cryptography(AnonymizationOperationInterface):
 
         for case_index, case in enumerate(xesLog):
             # Only hash if value is a match or no mathcing is required
-            isMatch = matchAttribute in (None, '') or (matchAttribute in case.keys() and case[matchAttribute] == matchAttributeValue)
+            isMatch = matchAttribute in (None, '') or (matchAttribute in case.attributes.keys() and case.attributes[matchAttribute] == matchAttributeValue)
 
-            if(isMatch and targetedAttribute in case.keys()):
-                h.update((self.cryptoSalt + str(case[targetedAttribute])).encode('utf-8'))
-                case[targetedAttribute] = h.hexdigest()
+            if(isMatch and targetedAttribute in case.attributes.keys()):
+                h.update((self.cryptoSalt + str(case.attributes[targetedAttribute])).encode('utf-8'))
+                case.attributes[targetedAttribute] = h.hexdigest()
 
         return self.AddExtension(xesLog, 'cry', 'case', targetedAttribute)
 
     def EncryptCaseAttribute(self, xesLog, targetedAttribute, matchAttribute=None, matchAttributeValue=None):
         for case_index, case in enumerate(xesLog):
             # Only crypt if value is a match or no mathcing is required
-            isMatch = matchAttribute in (None, '') or (matchAttribute in case.keys() and case[matchAttribute] == matchAttributeValue)
+            isMatch = matchAttribute in (None, '') or (matchAttribute in case.attributes.keys() and case.attributes[matchAttribute] == matchAttributeValue)
 
-            if(isMatch and targetedAttribute in case.keys()):
+            if(isMatch and targetedAttribute in case.attributes.keys()):
                 cipher = AES.new(self.cryptoKey, AES.MODE_CBC, iv=self.cryptoIV)
-                case[targetedAttribute] = cipher.encrypt(pad(str(case[targetedAttribute]).encode('utf-8'), AES.block_size)).hex()
+                case.attributes[targetedAttribute] = cipher.encrypt(pad(str(case.attributes[targetedAttribute]).encode('utf-8'), AES.block_size)).hex()
 
         return self.AddExtension(xesLog, 'cry', 'case', targetedAttribute)

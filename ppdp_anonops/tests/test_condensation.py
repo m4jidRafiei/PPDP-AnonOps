@@ -9,7 +9,7 @@ class TestCondensation(TestCase):
         xesPath = os.path.join(os.path.dirname(__file__), 'resources', 'Sepsis Cases - Event Log.xes')
         return xes_importer.apply(xesPath)
 
-    def test_eventLevelCondensation(self):
+    def test_01_eventLevelCondensation(self):
         for clusters in range(4, 7):
             log = self.getTestXesLog()
 
@@ -18,7 +18,7 @@ class TestCondensation(TestCase):
             # Needs to be a numeric attribute
             matchAttribute = "CRP"
 
-            log = s.CondenseEventAttributeBykMeanClusterMode(log, matchAttribute, clusters)
+            log = s.CondenseEventAttributeBykMeanClusterUsingMode(log, matchAttribute, clusters)
 
             self.assertEqual(self.__getNumberOfDistinctEventAttributeValues(log, matchAttribute), clusters)
 

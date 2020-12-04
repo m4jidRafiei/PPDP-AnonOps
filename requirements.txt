@@ -1,2 +1,3 @@
 p-privacy-qt
-sklearn-0.0
+sklearn
+kmodes

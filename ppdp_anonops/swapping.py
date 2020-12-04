@@ -52,15 +52,15 @@ class Swapping(AnonymizationOperationInterface):
 
         # Choose random new value from clustered data
         for case_index, case in enumerate(xesLog):
-            if(sensitiveAttribute in case.keys()):
+            if(sensitiveAttribute in case.attributes.keys()):
                 # Get possible values from current values cluster
-                listOfValues = clusteredValues[valueClusterDict[case[sensitiveAttribute]]]
+                listOfValues = clusteredValues[valueClusterDict[case.attributes[sensitiveAttribute]]]
 
                 # Generate new random index
                 rnd = random.randint(0, len(listOfValues) - 1)
 
                 # Overwrite old attribute value with new one
-                case[sensitiveAttribute] = listOfValues[rnd]
+                case.attributes[sensitiveAttribute] = listOfValues[rnd]
 
         self.AddExtension(xesLog, 'swa', 'case', sensitiveAttribute)
         return xesLog

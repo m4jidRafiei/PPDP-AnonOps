@@ -57,3 +57,14 @@ class AnonymizationOperationInterface(metaclass=abc.ABCMeta):
 
     def _getCaseAttributeValues(self, xesLog, attribute):
         return [case[attribute] for case_index, case in enumerate(xesLog)]
+
+    def _getEventAttributesTuples(self, xesLog, clusterRelevantAttributes):
+        tuples = []
+
+        for case_index, case in enumerate(xesLog):
+            for event_index, event in enumerate(case):
+                t = tuple((event[attribute] if attribute in event.keys() else 0) for attribute in clusterRelevantAttributes)
+                if (t not in tuples):
+                    tuples.append(t)
+
+        return tuples
