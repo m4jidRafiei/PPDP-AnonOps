@@ -32,6 +32,7 @@ class TestGeneralization(TestCase):
         self.assertEqual(self.getTime(log, "time:timestamp", "months"), no_events)  # no_events as default value for days is 1 and not 0 (0 is an ivalid day-of-month)
 
     def test_02_generalizationResourceTaxonomy(self):
+        self.Fail("Test is not redesigned to count depth from leafnode => TODO: Restructure")
         tax = TaxonomyTree()
         n_healthcare = tax.AddNode("Healthcare")
 

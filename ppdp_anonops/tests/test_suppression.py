@@ -1,10 +1,10 @@
 from unittest import TestCase
 import os
-from ppdp_anonops import Supression
+from ppdp_anonops import Suppression
 from pm4py.objects.log.importer.xes import factory as xes_importer
 
 
-class TestSupression(TestCase):
+class TestSuppression(TestCase):
     def getTestXesLog(self):
         xesPath = os.path.join(os.path.dirname(__file__), 'resources', 'running_example.xes')
         return xes_importer.apply(xesPath)
@@ -12,7 +12,7 @@ class TestSupression(TestCase):
     def test_suppressEvent(self):
         log = self.getTestXesLog()
 
-        s = Supression()
+        s = Suppression()
 
         no_traces = len(log)
         no_events = sum([len(trace) for trace in log])
@@ -29,7 +29,7 @@ class TestSupression(TestCase):
     def test_suppressEventAttribute(self):
         log = self.getTestXesLog()
 
-        s = Supression()
+        s = Suppression()
 
         matchAttribute = "concept:name"
         matchAttributeValue = "reinitiate request"
@@ -69,7 +69,7 @@ class TestSupression(TestCase):
     def test_suppressCaseByTraceLength(self):
         log = self.getTestXesLog()
 
-        s = Supression()
+        s = Suppression()
 
         no_traces = len(log)
         no_events = sum([len(trace) for trace in log])

@@ -3,11 +3,11 @@ from pm4py.objects.log.importer.xes import factory as xes_importer_factory
 import hashlib
 
 
-class Supression(AnonymizationOperationInterface):
+class Suppression(AnonymizationOperationInterface):
     """Replace a """
 
     def __init__(self):
-        super(Supression, self).__init__()
+        super(Suppression, self).__init__()
 
     def SuppressEvent(self, xesLog, matchAttribute, matchAttributeValue):
         for t_idx, trace in enumerate(xesLog):
@@ -20,12 +20,27 @@ class Supression(AnonymizationOperationInterface):
         xesLog[:] = [trace for trace in xesLog if len(trace) <= maxLength]
         return self.AddExtension(xesLog, 'sup', 'case', 'case')
 
-    def SuppressEventAttribute(self, xesLog, supressedAttribute, matchAttribute=None, matchAttributeValue=None):
+    def SuppressEventAttribute(self, xesLog, suppressedAttribute, matchAttribute=None, matchAttributeValue=None):
         for case_index, case in enumerate(xesLog):
             for event_index, event in enumerate(case):
                 isMatch = (matchAttribute is None and matchAttributeValue is None) or (matchAttribute in event.keys() and event[matchAttribute] == matchAttributeValue)
 
                 if (isMatch):
                     # Only supress resource if activity value is a match
-                    event[supressedAttribute] = None
-        return self.AddExtension(xesLog, 'sup', 'event', supressedAttribute)
+                    event[suppressedAttribute] = None
+        return self.AddExtension(xesLog, 'sup', 'event', suppressedAttribute)
+
+    def SuppressCase(self, xesLog, matchAttribute, matchAttributeValue):
+        # filter out all the cases with matching attribute values
+        xesLog[:] = [case for case in xesLog if (matchAttribute not in case.attributes.keys() or case.attributes[matchAttribute] != matchAttributeValue)]
+
+        return self.AddExtension(xesLog, 'sup', 'case', 'case')
+
+    def SuppressCaseAttribute(self, xesLog, suppressedAttribute, matchAttribute=None, matchAttributeValue=None):
+        for case_index, case in enumerate(xesLog):
+            isMatch = (matchAttribute is None and matchAttributeValue is None) or (matchAttribute in case.attributes.keys() and case.attributes[matchAttribute] == matchAttributeValue)
+
+            if (isMatch):
+                # Only supress resource if activity value is a match
+                case.attributes[suppressedAttribute] = None
+        return self.AddExtension(xesLog, 'sup', 'case', suppressedAttribute)
