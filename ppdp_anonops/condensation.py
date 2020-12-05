@@ -108,9 +108,10 @@ class Condensation(AnonymizationOperationInterface):
 
         return self.AddExtension(xesLog, 'con', 'case', sensitiveAttribute)
 
-    def CondenseEventAttributeByEuclidianDistance(self, xesLog, sensitiveAttribute, descriptiveAttributes, weights, k_clusters):
+    def CondenseEventAttributeByEuclidianDistance(self, xesLog, sensitiveAttribute, descriptiveAttributes, weightDict, k_clusters):
         attributes = descriptiveAttributes
         attributes.append(sensitiveAttribute)
+        weights = [weightDict[a] for a in attributes]
 
         values = []
         for case_index, case in enumerate(xesLog):
@@ -129,10 +130,11 @@ class Condensation(AnonymizationOperationInterface):
 
         return self.AddExtension(xesLog, 'con', 'event', sensitiveAttribute)
 
-    def CondenseCaseAttributeByEuclidianDistance(self, xesLog, sensitiveAttribute, descriptiveAttributes, weights, k_clusters):
+    def CondenseCaseAttributeByEuclidianDistance(self, xesLog, sensitiveAttribute, descriptiveAttributes, weightDict, k_clusters):
         # Move Unique-Event-Attributes up to trace attributes
         attributes = descriptiveAttributes
         attributes.append(sensitiveAttribute)
+        weights = [weightDict[a] for a in attributes]
 
         values = []
         for case_index, case in enumerate(xesLog):
