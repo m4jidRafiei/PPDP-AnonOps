@@ -15,6 +15,8 @@ import numbers
 
 from sklearn.preprocessing import OneHotEncoder
 
+from ppdp_anonops.utils import euclidClusterHelper
+
 
 def main():
     # c = Condensation()
@@ -27,7 +29,23 @@ def main():
     # oneHot()
 
     log = xes_importer.apply("resources/Sepsis Cases - Event Log.xes")
-    euclidDistClusterCase(log, "Age", ["concept:name", "Diagnose"], 5, verboose=1)
+    #euclidDistClusterCase(log, "Age", ["concept:name", "Diagnose"], 5, verboose=1)
+
+    # Move Unique-Event-Attributes up to trace attributes
+    attributes = ["concept:name", "Diagnose"]
+    attributes.append("Age")
+    log = euclidClusterHelper.liftUniqueEventAttributesToCase(log, attributes)
+
+    values = []
+    for case_index, case in enumerate(log):
+        caseValues = []
+        for attr in attributes:
+            caseValues.append(case.attributes[attr])
+        values.append(caseValues)
+
+    cluster = euclidClusterHelper.euclidDistCluster_Fit(values, 5, [0.1, 0.15, 0.75])
+    print(cluster["labels"])
+    print(cluster["categories"])
 
     #log = xes_importer.apply("resources/running_example_caseAttributes.xes")
     #euclidDistClusterCase(log, "Age", ["Zip", "Salary", "concept:name"], 3, verboose=1)
@@ -98,25 +116,7 @@ def euclidDistClusterCase(log, sensitiveAttribute, descriptiveAttributes, k, ver
     # Move Unique-Event-Attributes up to trace attributes
     attributes = descriptiveAttributes
     attributes.append(sensitiveAttribute)
-
-    for attr in attributes:
-        for case_index, case in enumerate(log):
-            # Check whether the attribute is a unique event attribute (Only occuring once and in the first event)
-            if(attr not in case.attributes.keys()):
-                # Ensure the attribute exists, even if it is None
-                case.attributes[attr] = None
-
-                move = True
-                for event_index, event in enumerate(case):
-                    if ((event_index == 0 and attr not in event.keys()) or (event_index > 0 and attr in event.keys())):
-                        move = False
-
-                if(move):
-                    case.attributes[attr] = case[0][attr]
-    if(verboose == 1):
-        print("######################### Case Attributes after moving #########################")
-        print(log[0].attributes.keys())
-        print("################################################################################")
+    log = liftUniqueEventAttributesToCase(log, attributes)
 
     # Randomly select k cases to be the centroids of our clustering
     clusterCentroids = []
@@ -125,10 +125,6 @@ def euclidDistClusterCase(log, sensitiveAttribute, descriptiveAttributes, k, ver
             clusterCentroids.append(log[i])
     except ValueError:
         raise ValueError("Choose a suitable amount of clusters: k < " + str(len(log)))
-    if(verboose == 1):
-        print("######################### Cluster Centroids #########################")
-        print(clusterCentroids)
-        print("#####################################################################")
 
     # When a selected attribute is not of a numeric type => One-Hot encode it
     oneHotEncodedDict = {}
@@ -148,7 +144,7 @@ def euclidDistClusterCase(log, sensitiveAttribute, descriptiveAttributes, k, ver
             oneHotEncodedDict[attr]['OneHotEncoded'].append(tuple(t))
             #oneHotEncodedDict[attr]['OneHotSkalar'].append(2 * i)
             #oneHotEncodedDict[attr]['OneHotSkalar'].append((2 + i) * i)
-            oneHotEncodedDict[attr]['OneHotSkalar'].append(1 + ((i*1.0) / len(oneHotEncodedDict[attr]['Values'])))
+            oneHotEncodedDict[attr]['OneHotSkalar'].append(1 + ((i * 1.0) / len(oneHotEncodedDict[attr]['Values'])))
 
     if(verboose == 1):
         print("######################### OneHot-Encoding #########################")
