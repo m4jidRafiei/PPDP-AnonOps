@@ -10,14 +10,13 @@ import numpy as np
 from kmodes.kmodes import KModes
 import numbers
 
+from ppdp_anonops.utils import euclidClusterHelper
+
 
 class Condensation(AnonymizationOperationInterface):
 
     def __init__(self):
         super(Condensation, self).__init__()
-
-    # Possibly realize by k-means clustering
-    # def condenseNumericalAttribute(self, sensitiveAttribute):
 
     def CondenseEventAttributeBykMeanClusterUsingMode(self, xesLog, sensitiveAttribute, k_clusters):
         values = self._getEventAttributeValues(xesLog, sensitiveAttribute)
@@ -34,7 +33,7 @@ class Condensation(AnonymizationOperationInterface):
             for event_index, event in enumerate(case):
                 if(sensitiveAttribute in event.keys()):
                     event[sensitiveAttribute] = clusterMode[valueClusterDict[event[sensitiveAttribute]]]
-        print(clusterMode)
+
         return self.AddExtension(xesLog, 'con', 'event', sensitiveAttribute)
 
     def CondenseCaseAttributeBykMeanClusterUsingMode(self, xesLog, sensitiveAttribute, k_clusters):
@@ -106,6 +105,62 @@ class Condensation(AnonymizationOperationInterface):
             if(sensitiveAttribute in case.attributes.keys()):
                 t = tuple((case.attributes[attribute] if attribute in case.attributes.keys() else 0) for attribute in clusterRelevantAttributes)
                 case.attributes[sensitiveAttribute] = km.cluster_centroids_[valueClusterDict[t]][-1]
+
+        return self.AddExtension(xesLog, 'con', 'case', sensitiveAttribute)
+
+    def CondenseEventAttributeByEuclidianDistance(self, xesLog, sensitiveAttribute, descriptiveAttributes, weights, k_clusters):
+        attributes = descriptiveAttributes
+        attributes.append(sensitiveAttribute)
+
+        values = []
+        for case_index, case in enumerate(xesLog):
+            for event_index, event in enumerate(case):
+                eventValues = []
+                for attr in attributes:
+                    eventValues.append(event[attr])
+                values.append(eventValues)
+
+        cluster = euclidClusterHelper.euclidDistCluster_Fit(values, k_clusters, weights)
+        i = 0
+        for case_index, case in enumerate(xesLog):
+            for event_index, event in enumerate(case):
+                event[sensitiveAttribute] = cluster['categories'][cluster['labels'][i]]
+                i = i + 1
+
+        return self.AddExtension(xesLog, 'con', 'event', sensitiveAttribute)
+
+    def CondenseCaseAttributeByEuclidianDistance(self, xesLog, sensitiveAttribute, descriptiveAttributes, weights, k_clusters):
+        # Move Unique-Event-Attributes up to trace attributes
+        attributes = descriptiveAttributes
+        attributes.append(sensitiveAttribute)
+
+        values = []
+        for case_index, case in enumerate(xesLog):
+            caseValues = []
+            for attr in attributes:
+
+                # Check whether the attribute is a unique event attribute (Only occuring once and in the first event)
+                if(attr not in case.attributes.keys()):
+                    # Ensure the attribute exists, even if it is None
+                    val = None
+
+                    unique = True
+                    for event_index, event in enumerate(case):
+                        if ((event_index == 0 and attr not in event.keys()) or (event_index > 0 and attr in event.keys())):
+                            unique = False
+
+                    if(unique):
+                        val = case[0][attr]
+                    caseValues.append(val)
+                else:
+                    caseValues.append(case.attributes[attr])
+            values.append(caseValues)
+
+        cluster = euclidClusterHelper.euclidDistCluster_Fit(values, k_clusters, weights)
+        i = 0
+        for case_index, case in enumerate(xesLog):
+            case.attributes[sensitiveAttribute] = cluster['categories'][cluster['labels'][i]]
+            i = i + 1
 
         return self.AddExtension(xesLog, 'con', 'case', sensitiveAttribute)
 

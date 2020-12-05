@@ -19,8 +19,10 @@ from ppdp_anonops.utils import euclidClusterHelper
 
 
 def main():
-    # c = Condensation()
-    # log = xes_importer.apply("resources/Sepsis Cases - Event Log.xes")
+    c = Condensation()
+    log = xes_importer.apply("resources/Sepsis Cases - Event Log.xes")
+    xes_exporter.export_log(c.CondenseCaseAttributeByEuclidianDistance(log, "Age", ["concept:name", "Diagnose"], [0.1, 0.15, 0.75], 5), "tmpEuclid.xes")
+
     # log = c.CondenseEventAttributeBykModeCluster(log, "concept:name", ["org:group", "CRP", "LacticAcid"], 5)
     # xes_exporter.export_log(log, "tmp.xes")
 
