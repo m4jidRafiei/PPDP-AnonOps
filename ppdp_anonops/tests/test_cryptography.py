@@ -49,7 +49,7 @@ class TestCryptography(TestCase):
                 if event["org:resource"] not in frequency:
                     frequency.append(event["org:resource"])
 
-        log = s.HashEventAttribute(log, targetAttribute, matchAttribute, matchAttributeValue)
+        log = s.HashEventAttribute(log, targetAttribute, (lambda c, e: matchAttribute in e.keys() and e[matchAttribute] == matchAttributeValue))
 
         frequencyNew = []
         for case_index, case in enumerate(log):
@@ -100,7 +100,7 @@ class TestCryptography(TestCase):
                 if event["org:resource"] not in frequency:
                     frequency.append(event["org:resource"])
 
-        log = s.EncryptEventAttribute(log, targetAttribute, matchAttribute, matchAttributeValue)
+        log = s.EncryptEventAttribute(log, targetAttribute, (lambda c, e: matchAttribute in e.keys() and e[matchAttribute] == matchAttributeValue))
 
         frequencyNew = []
         for case_index, case in enumerate(log):

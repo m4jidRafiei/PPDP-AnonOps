@@ -78,3 +78,55 @@ def euclidianDistance(weights, attributesA, attributesB):
 
         #print(str(weights[i]) + " * " + "((" + str(attributesA[i]) + " - " + str(attributesB[i]) + ") ** 2)) = " + str(weights[i] * ((attributesA[i] - attributesB[i]) ** 2)))
     return sqrt(sum)
+
+
+def oneHotEncodeNonNumericAttributes(namedAttributes, instanceAttribute2DArray):
+    """
+    This function takes a 2-dimensional array of instances and their attributes [[Attribute 1, Attribute 2], [Attribute 1, Attribute 2]]
+    and checks, whether an attribute is non numerical.
+
+    If a non numerical attribute is discovered it will get OneHot encoded over all available values of that attribute
+    The OneHot-Vectors will then get normalized to a value in the interval [0, 1] by the mapping i-th vector to i/N for N-Vector dimensions
+
+    This function returns an array in the same structure as it was given, just with categorical values replaces by OneHot-Values
+    Secondly, this function returns a dictionary to reverse the OneHot encoding: oneHotInversionDict[ATTRIBUTE][ONEHOT-VALUE] = ORIGINAL-ATTRIBUTE
+    """
+    values = instanceAttribute2DArray
+    attributes = len(values[0])
+    performOneHot = []
+    oneHotToValueDict = {}
+    valueToOneHotDict = {}
+
+    for i in range(attributes):
+        performOneHot.append(not isinstance(values[0][i], numbers.Number))
+
+    # When a selected attribute is not of a numeric type => One-Hot encode it
+    oneHotEncodedDict = {}
+    for i in range(attributes):
+        if performOneHot[i]:
+            oneHotEncodedDict[i] = {'Values': [], 'OneHotEncoded': [], 'OneHotNormalized': [], 'ValueToIndex': {}}
+            oneHotToValueDict[namedAttributes[i]] = {}
+            valueToOneHotDict[namedAttributes[i]] = {}
+
+            for j in range(len(values)):
+                if values[j][i] not in oneHotEncodedDict[i]['Values']:
+                    oneHotEncodedDict[i]['Values'].append(values[j][i])
+                    oneHotEncodedDict[i]['ValueToIndex'][values[j][i]] = len(oneHotEncodedDict[i]['Values']) - 1
+
+            for k in range(0, len(oneHotEncodedDict[i]['Values'])):
+                # Create OneHot-Tuple
+                t = [0, ]*len(oneHotEncodedDict[i]['Values'])
+                t[k] = 1
+                oneHotEncodedDict[i]['OneHotEncoded'].append(tuple(t))
+
+                oneHotValue = ((k * 1.0) / len(oneHotEncodedDict[i]['Values']))
+                oneHotEncodedDict[i]['OneHotNormalized'].append(oneHotValue)
+                oneHotToValueDict[namedAttributes[i]][oneHotValue] = oneHotEncodedDict[i]['Values'][k]
+                valueToOneHotDict[namedAttributes[i]][oneHotEncodedDict[i]['Values'][k]] = oneHotValue
+
+            for j in range(len(values)):
+                idx = oneHotEncodedDict[i]['ValueToIndex'][values[j][i]]
+                #values[j][i] = oneHotEncodedDict[i]['OneHotEncoded'][idx]
+                values[j][i] = oneHotEncodedDict[i]['OneHotNormalized'][idx]
+
+    return values, valueToOneHotDict, oneHotToValueDict

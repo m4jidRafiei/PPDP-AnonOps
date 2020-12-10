@@ -11,26 +11,39 @@ from sklearn.preprocessing import StandardScaler
 import numpy as np
 import numbers
 
+from ppdp_anonops.utils import euclidClusterHelper
+
 
 class Swapping(AnonymizationOperationInterface):
     def __init__(self):
         super(Swapping, self).__init__()
 
-    def SwapEventAttributeValuesBykMeanCluster(self, xesLog, sensitiveAttribute, k_clusters):
-        values = self._getEventAttributeValues(xesLog, sensitiveAttribute)
+    def SwapEventAttributeValuesBykMeanCluster(self, xesLog, sensitiveAttribute, descriptiveAttributes, k_clusters):
+        allAttributes = descriptiveAttributes.copy()
+        allAttributes.append(sensitiveAttribute)
 
-        self.__checkNumericAttributes(values)
+        values = self._getEventMultipleAttributeValues(xesLog, allAttributes)
+        values, valueToOneHotDict, oneHotToValueDict = euclidClusterHelper.oneHotEncodeNonNumericAttributes(allAttributes, values)
 
-        kmeans = self.__clusterizeData(values, k_clusters)
+        kmeans = KMeans(n_clusters=k_clusters)
+        kmeans.fit(values)
 
-        valueClusterDict, clusteredValues = self.__getClusterHelpers(kmeans, values)
+        # Get a dict with the value as key and the cluster it is assigned to as value
+        valueToClusterDict = self.__getValuesOfSensitiveAttributePerClusterAsDict(kmeans.labels_, values)
+
+        # If OneHot encoding was used: Ensure the mapping dicts are working with the original values, not the OneHot values
+        if(sensitiveAttribute in valueToOneHotDict.keys()):
+            clusterToValuesDict = {k: [oneHotToValueDict[sensitiveAttribute][x] for x in valueToClusterDict.keys() if valueToClusterDict[x] == k] for k in range(k_clusters)}
+            valueToClusterDict = {oneHotToValueDict[sensitiveAttribute][x]: valueToClusterDict[x] for x in valueToClusterDict.keys()}
+        else:
+            clusterToValuesDict = {k: [x for x in valueToClusterDict.keys() if valueToClusterDict[x] == k] for k in range(k_clusters)}
 
         # Choose random new value from clustered data
         for case_index, case in enumerate(xesLog):
             for event_index, event in enumerate(case):
                 if(sensitiveAttribute in event.keys()):
                     # Get possible values from current values cluster
-                    listOfValues = clusteredValues[valueClusterDict[event[sensitiveAttribute]]]
+                    listOfValues = clusterToValuesDict[valueToClusterDict[event[sensitiveAttribute]]]
 
                     # Generate new random index
                     rnd = random.randint(0, len(listOfValues) - 1)
@@ -41,20 +54,31 @@ class Swapping(AnonymizationOperationInterface):
         self.AddExtension(xesLog, 'swa', 'event', sensitiveAttribute)
         return xesLog
 
-    def SwapCaseAttributeValuesBykMeanCluster(self, xesLog, sensitiveAttribute, k_clusters):
-        values = self._getCaseAttributeValues(xesLog, sensitiveAttribute)
+    def SwapCaseAttributeValuesBykMeanCluster(self, xesLog, sensitiveAttribute, descriptiveAttributes, k_clusters):
+        allAttributes = descriptiveAttributes.copy()
+        allAttributes.append(sensitiveAttribute)
 
-        self.__checkNumericAttributes(values)
+        values = self._getCaseMultipleAttributeValues(xesLog, allAttributes)
+        values, valueToOneHotDict, oneHotToValueDict = euclidClusterHelper.oneHotEncodeNonNumericAttributes(allAttributes, values)
 
-        kmeans = self.__clusterizeData(values, k_clusters)
+        kmeans = KMeans(n_clusters=k_clusters)
+        kmeans.fit(values)
 
-        valueClusterDict, clusteredValues = self.__getClusterHelpers(kmeans, values)
+        # Get a dict with the value as key and the cluster it is assigned to as value
+        valueToClusterDict = self.__getValuesOfSensitiveAttributePerClusterAsDict(kmeans.labels_, values)
+
+        # If OneHot encoding was used: Ensure the mapping dicts are working with the original values, not the OneHot values
+        if(sensitiveAttribute in valueToOneHotDict.keys()):
+            clusterToValuesDict = {k: [oneHotToValueDict[sensitiveAttribute][x] for x in valueToClusterDict.keys() if valueToClusterDict[x] == k] for k in range(k_clusters)}
+            valueToClusterDict = {oneHotToValueDict[sensitiveAttribute][x]: valueToClusterDict[x] for x in valueToClusterDict.keys()}
+        else:
+            clusterToValuesDict = {k: [x for x in valueToClusterDict.keys() if valueToClusterDict[x] == k] for k in range(k_clusters)}
 
         # Choose random new value from clustered data
         for case_index, case in enumerate(xesLog):
             if(sensitiveAttribute in case.attributes.keys()):
                 # Get possible values from current values cluster
-                listOfValues = clusteredValues[valueClusterDict[case.attributes[sensitiveAttribute]]]
+                listOfValues = clusterToValuesDict[valueToClusterDict[case.attributes[sensitiveAttribute]]]
 
                 # Generate new random index
                 rnd = random.randint(0, len(listOfValues) - 1)
@@ -72,27 +96,10 @@ class Swapping(AnonymizationOperationInterface):
             raise NotImplementedError("Use a numeric attribute")
         pass
 
-    def __clusterizeData(self, values, k_clusters):
-        # initialize KMeans object specifying the number of desired clusters
-        kmeans = KMeans(n_clusters=k_clusters)
-
-        # reshape data to make them clusterable
-        readyData = np.array(values).reshape(-1, 1)
-
-        # learning the clustering from the input date
-        kmeans.fit(readyData)
-
-        return kmeans
-
-    def __getClusterHelpers(self, kmeans, values):
-        # Provides a cluster number for every key
-        valueClusterDict = {}
-        for i in range(len(kmeans.labels_)):
-            if values[i] not in valueClusterDict:
-                valueClusterDict[values[i]] = kmeans.labels_[i]
-
-        clusterValues = {}
-        for i in range(kmeans.n_clusters):
-            clusterValues[i] = [x for x in valueClusterDict.keys() if valueClusterDict[x] == i]
-
-        return valueClusterDict, clusterValues
+    def __getValuesOfSensitiveAttributePerClusterAsDict(self, clusterLabels, values):
+        valueToClusterDict = {}
+        for i in range(len(clusterLabels)):
+            # [-1] as the sensitive attribute value is always the last in the list
+            if values[i][-1] not in valueToClusterDict.keys():
+                valueToClusterDict[values[i][-1]] = clusterLabels[i]
+        return valueToClusterDict

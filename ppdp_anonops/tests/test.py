@@ -19,38 +19,46 @@ from ppdp_anonops.utils import euclidClusterHelper
 
 
 def main():
-    c = Condensation()
-    log = xes_importer.apply("resources/Sepsis Cases - Event Log.xes")
-    xes_exporter.export_log(c.CondenseCaseAttributeByEuclidianDistance(log, "Age", ["concept:name", "Diagnose"], [0.1, 0.15, 0.75], 5), "tmpEuclid.xes")
+    log = xes_importer.apply("resources/running_exampleWithCaseAttributes.xes")
+    #c = Condensation()
+    #log = c.CondenseCaseAttributeBykMeanClusterUsingMode(log, "Age", ["concept:name", "Zip"], 3)
+    #log = c.CondenseEventAttributeBykModeCluster(log, "Leader", ["concept:name", "Zip"], 3)
+    s = Swapping()
+    s.SwapCaseAttributeValuesBykMeanCluster(log, "Leader", ["concept:name", "Zip"], 4)
+    #s.SwapCaseAttributeValuesBykMeanCluster(log, "Age", ["concept:name", "Zip"], 3)
+    xes_exporter.export_log(log, "tmpEuclid.xes")
 
-    # log = c.CondenseEventAttributeBykModeCluster(log, "concept:name", ["org:group", "CRP", "LacticAcid"], 5)
-    # xes_exporter.export_log(log, "tmp.xes")
+    # sensitiveAttribute = "Age"
+    # descriptiveAttributes = ["concept:name", "Zip", "Leader"]
+    # allAttributes = ["Age"]  # ["concept:name", "Zip", "Leader", "Age"]
+    # k_clusters = 5
 
-    # kModes()
+    # values = _getCaseAttributeValues(log, allAttributes)
+    # print(values, sep=',')
+    # values = euclidClusterHelper.oneHotEncodeNonNumericAttributes(values)
+    # print(values, sep=',')
 
-    # oneHot()
+    # # initialize KMeans object specifying the number of desired clusters
+    # kmeans = KMeans(n_clusters=k_clusters)
+    # # reshape data to make them clusterable
+    # readyData = values  # np.array(values).reshape(-1, 1)
+    # # learning the clustering from the input date
+    # kmeans.fit(readyData)
 
-    log = xes_importer.apply("resources/Sepsis Cases - Event Log.xes")
-    #euclidDistClusterCase(log, "Age", ["concept:name", "Diagnose"], 5, verboose=1)
+    # print(kmeans.labels_)
+    # print(kmeans.cluster_centers_)
 
-    # Move Unique-Event-Attributes up to trace attributes
-    attributes = ["concept:name", "Diagnose"]
-    attributes.append("Age")
-    log = euclidClusterHelper.liftUniqueEventAttributesToCase(log, attributes)
+    # valueClusterDict = __getValueToCluster(kmeans, values)
+    # clusterMode = __getClusterMode(kmeans, values)
 
-    values = []
-    for case_index, case in enumerate(log):
-        caseValues = []
-        for attr in attributes:
-            caseValues.append(case.attributes[attr])
-        values.append(caseValues)
+    # # Apply clustered data mode to log
+    # for case_index, case in enumerate(log):
+    #     for event_index, event in enumerate(case):
+    #         if(sensitiveAttribute in event.keys()):
+    #             event[sensitiveAttribute] = clusterMode[valueClusterDict[event[sensitiveAttribute]]]
 
-    cluster = euclidClusterHelper.euclidDistCluster_Fit(values, 5, [0.1, 0.15, 0.75])
-    print(cluster["labels"])
-    print(cluster["categories"])
-
-    #log = xes_importer.apply("resources/running_example_caseAttributes.xes")
-    #euclidDistClusterCase(log, "Age", ["Zip", "Salary", "concept:name"], 3, verboose=1)
+    ## log = c.CondenseEventAttributeBykModeCluster(log, "concept:name", ["org:group", "CRP", "LacticAcid"], 5)
+    ## xes_exporter.export_log(log, "tmp.xes")
 
 
 def kModes():
@@ -72,46 +80,6 @@ def kModes():
 
     for i in range(len(vals)):
         print(str(km.cluster_centroids_[km.labels_[i]]) + " => " + str(vals[i]))
-
-
-def oneHot():
-    log = xes_importer.apply("resources/Sepsis Cases - Event Log.xes")
-    attribute = "concept:name"
-    # attribute = "org:group"
-
-    vals = []
-    for case_index, case in enumerate(log):
-        for eIdx, e in enumerate(case):
-            if(e[attribute] not in vals):
-                vals.append(e[attribute])
-
-    enc = OneHotEncoder(handle_unknown='ignore')
-    vals = np.array(vals).reshape(-1, 1)
-    enc.fit(vals)
-
-    encDict = {}
-    decDict = {}
-    data = enc.transform(vals).toarray()
-    cat = enc.categories_[0]
-    for i in range(len(cat)):
-        encDict[cat[i]] = data[i]
-        # decDict[data[i]] = cat[i]
-
-    print(encDict)
-    print('###############')
-    print(decDict)
-
-    # initialize KMeans object specifying the number of desired clusters
-    kmeans = KMeans(n_clusters=5)
-
-    # reshape data to make them clusterable
-    readyData = data  # np.array(data).reshape(-1, 1)
-
-    # learning the clustering from the input date
-    kmeans.fit(readyData)
-
-    print(kmeans.labels_)
-    print(vals.reshape(1, -1)[0])
 
 
 def euclidDistClusterCase(log, sensitiveAttribute, descriptiveAttributes, k, verboose=0):
@@ -220,6 +188,39 @@ def __getMode(self, valueList):
     # Sort dict by value
     s = {k: v for k, v in sorted(s.items(), key=lambda item: item[1])}
     return next(iter(s.keys()))
+
+
+def __getValueToCluster(kmeans, values):
+    # Provides a cluster number for every key
+    valueClusterDict = {}
+    for i in range(len(kmeans.labels_)):
+        if values[i] not in valueClusterDict:
+            valueClusterDict[values[i]] = kmeans.labels_[i]
+    return valueClusterDict
+
+
+def __getClusterMode(kmeans, values):
+    valueClusterDict = __getValueToCluster(kmeans, values)
+
+    clusterMode = {}
+    for i in range(kmeans.n_clusters):
+        clusterMode[i] = __getMode([x for x in valueClusterDict.keys() if valueClusterDict[x] == i])
+
+    return clusterMode
+
+
+def _getCaseAttributeValues(xesLog, attributes):
+    values = []
+
+    for case_index, case in enumerate(xesLog):
+        c = []
+
+        for attribute in attributes:
+            if(attribute in case.attributes.keys()):
+                c.append(case.attributes[attribute])
+        values.append(c)
+
+    return values
 
 
 if __name__ == "__main__":

@@ -19,7 +19,7 @@ class TestSuppression(TestCase):
         self.assertEqual(no_traces, 6)
         self.assertEqual(no_events, 42)
 
-        log = s.SuppressEvent(log, "concept:name", "reinitiate request")  # concept:name is activity
+        log = s.SuppressEvent(log, (lambda c, e:  "concept:name" in e.keys() and e["concept:name"] == "reinitiate request"))  # concept:name is activity
 
         no_traces = len(log)
         no_events = sum([len(trace) for trace in log])
@@ -50,7 +50,7 @@ class TestSuppression(TestCase):
         self.assertEqual(counter, 0)
 
         # Supress resource if activity matches 'reinitiate request'
-        log = s.SuppressEventAttribute(log, supressedAttribute, matchAttribute, matchAttributeValue)
+        log = s.SuppressEventAttribute(log, supressedAttribute, (lambda c, e: matchAttribute in e.keys() and e[matchAttribute] == matchAttributeValue))
 
         no_traces = len(log)
         no_events = sum([len(trace) for trace in log])
@@ -76,7 +76,7 @@ class TestSuppression(TestCase):
         self.assertEqual(no_traces, 6)
         self.assertEqual(no_events, 42)
 
-        log = s.SuppressCaseByTraceLength(log, 5)
+        log = s.SuppressCase(log, (lambda c, e: len(c) > 5))
 
         no_traces = len(log)
         no_events = sum([len(trace) for trace in log])

@@ -9,7 +9,6 @@ from sklearn.preprocessing import StandardScaler
 import numpy as np
 from kmodes.kmodes import KModes
 import numbers
-
 from ppdp_anonops.utils import euclidClusterHelper
 
 
@@ -18,93 +17,101 @@ class Condensation(AnonymizationOperationInterface):
     def __init__(self):
         super(Condensation, self).__init__()
 
-    def CondenseEventAttributeBykMeanClusterUsingMode(self, xesLog, sensitiveAttribute, k_clusters):
-        values = self._getEventAttributeValues(xesLog, sensitiveAttribute)
+    def CondenseEventAttributeBykMeanClusterUsingMode(self, xesLog, sensitiveAttribute, descriptiveAttributes, k_clusters):
+        allAttributes = descriptiveAttributes.copy()
+        allAttributes.append(sensitiveAttribute)
 
-        self.__checkNumericAttributes(values)
+        values = self._getEventMultipleAttributeValues(xesLog, allAttributes)
+        values, valueToOneHotDict, oneHotToValueDict = euclidClusterHelper.oneHotEncodeNonNumericAttributes(allAttributes, values)
 
-        kmeans = self.__clusterizeData(values, k_clusters)
+        kmeans = KMeans(n_clusters=k_clusters)
+        kmeans.fit(values)
 
-        valueClusterDict = self.__getValueToCluster(kmeans, values)
-        clusterMode = self.__getClusterMode(kmeans, values)
+        # Get a dict with the value as key and the cluster it is assigned to as value
+        valueToClusterDict = self.__getValuesOfSensitiveAttributePerClusterAsDict(kmeans.labels_, values)
+        clusterModeDict = self.__getModeOfSensitiveAttributePerCluster(kmeans.labels_, values, k_clusters)
 
         # Apply clustered data mode to log
         for case_index, case in enumerate(xesLog):
             for event_index, event in enumerate(case):
                 if(sensitiveAttribute in event.keys()):
-                    event[sensitiveAttribute] = clusterMode[valueClusterDict[event[sensitiveAttribute]]]
+                    if sensitiveAttribute in valueToOneHotDict.keys():
+                        oneHotOfValue = valueToOneHotDict[sensitiveAttribute][event[sensitiveAttribute]]
+                        clusterOfValue = valueToClusterDict[oneHotOfValue]
+                        valueOfOneHot = oneHotToValueDict[sensitiveAttribute][clusterModeDict[clusterOfValue]]
+                        event[sensitiveAttribute] = valueOfOneHot
+                    else:
+                        event[sensitiveAttribute] = clusterModeDict[valueToClusterDict[event[sensitiveAttribute]]]
 
         return self.AddExtension(xesLog, 'con', 'event', sensitiveAttribute)
 
-    def CondenseCaseAttributeBykMeanClusterUsingMode(self, xesLog, sensitiveAttribute, k_clusters):
-        values = self._getCaseAttributeValues(xesLog, sensitiveAttribute)
+    def CondenseCaseAttributeBykMeanClusterUsingMode(self, xesLog, sensitiveAttribute, descriptiveAttributes, k_clusters):
+        allAttributes = descriptiveAttributes.copy()
+        allAttributes.append(sensitiveAttribute)
 
-        self.__checkNumericAttributes(values)
+        values = self._getCaseMultipleAttributeValues(xesLog, allAttributes)
+        values, valueToOneHotDict, oneHotToValueDict = euclidClusterHelper.oneHotEncodeNonNumericAttributes(allAttributes, values)
 
-        kmeans = self.__clusterizeData(values, k_clusters)
+        kmeans = KMeans(n_clusters=k_clusters)
+        kmeans.fit(values)
 
-        valueClusterDict = self.__getValueToCluster(kmeans, values)
-        clusterMode = self.__getClusterMode(kmeans, values)
+        # Get a dict with the value as key and the cluster it is assigned to as value
+        valueToClusterDict = self.__getValuesOfSensitiveAttributePerClusterAsDict(kmeans.labels_, values)
+        clusterModeDict = self.__getModeOfSensitiveAttributePerCluster(kmeans.labels_, values, k_clusters)
 
         # Apply clustered data mode to log
         for case_index, case in enumerate(xesLog):
             if(sensitiveAttribute in case.attributes.keys()):
-                case.attributes[sensitiveAttribute] = clusterMode[valueClusterDict[case.attributes[sensitiveAttribute]]]
+                if sensitiveAttribute in valueToOneHotDict.keys():
+                    oneHotOfValue = valueToOneHotDict[sensitiveAttribute][case.attributes[sensitiveAttribute]]
+                    clusterOfValue = valueToClusterDict[oneHotOfValue]
+                    valueOfOneHot = oneHotToValueDict[sensitiveAttribute][clusterModeDict[clusterOfValue]]
+                    case.attributes[sensitiveAttribute] = valueOfOneHot
+                else:
+                    case.attributes[sensitiveAttribute] = clusterModeDict[valueToClusterDict[case.attributes[sensitiveAttribute]]]
 
         return self.AddExtension(xesLog, 'con', 'case', sensitiveAttribute)
 
-    def CondenseEventAttributeBykModeCluster(self, xesLog, sensitiveAttribute, clusterRelevantAttributes, k_clusters):
+    def CondenseEventAttributeBykModesClusterUsingMode(self, xesLog, sensitiveAttribute, descriptiveAttributes, k_clusters):
         # Make sure the sensitive attribute is last in line for later indexing
-        if(sensitiveAttribute in clusterRelevantAttributes):
-            clusterRelevantAttributes.remove(sensitiveAttribute)
-        clusterRelevantAttributes.append(sensitiveAttribute)
+        allAttributes = descriptiveAttributes.copy()
+        allAttributes.append(sensitiveAttribute)
 
-        values = self._getEventAttributesTuples(xesLog, clusterRelevantAttributes)
-
-        km = KModes(n_clusters=k_clusters, init='Huang', n_init=5)
-
-        if(len(values[0]) == 1):
-            values = np.array(values).reshape(-1, 1)
-
+        values = self._getEventMultipleAttributeValues(xesLog, allAttributes)
+        km = KModes(n_clusters=k_clusters, init='random')
         clusters = km.fit_predict(values)
-        valueClusterDict = self.__getValueToCluster(km, values)
 
-        print(valueClusterDict)
-        print(km.cluster_centroids_)
+        # Get a dict with the value as key and the cluster it is assigned to as value
+        valueToClusterDict = self.__getValuesOfSensitiveAttributePerClusterAsDict(clusters, values)
+        clusterModeDict = self.__getModeOfSensitiveAttributePerCluster(clusters, values, k_clusters)
 
         # Apply clustered data mode to log
         for case_index, case in enumerate(xesLog):
             for event_index, event in enumerate(case):
                 if(sensitiveAttribute in event.keys()):
-                    t = tuple((event[attribute] if attribute in event.keys() else 0) for attribute in clusterRelevantAttributes)
-                    event[sensitiveAttribute] = km.cluster_centroids_[valueClusterDict[t]][-1]
+                    clusterOfValue = valueToClusterDict[event[sensitiveAttribute]]
+                    event[sensitiveAttribute] = clusterModeDict[clusterOfValue]
 
         return self.AddExtension(xesLog, 'con', 'event', sensitiveAttribute)
 
-    def CondenseCaseAttributeBykModeCluster(self, xesLog, sensitiveAttribute, clusterRelevantAttributes, k_clusters):
+    def CondenseCaseAttributeBykModesClusterUsingMode(self, xesLog, sensitiveAttribute, descriptiveAttributes, k_clusters):
         # Make sure the sensitive attribute is last in line for later indexing
-        if(sensitiveAttribute in clusterRelevantAttributes):
-            clusterRelevantAttributes.remove(sensitiveAttribute)
-        clusterRelevantAttributes.append(sensitiveAttribute)
+        allAttributes = descriptiveAttributes.copy()
+        allAttributes.append(sensitiveAttribute)
 
-        values = self._getEventAttributesTuples(xesLog, clusterRelevantAttributes)
-
-        km = KModes(n_clusters=k_clusters, init='Huang', n_init=5)
-
-        if(len(values[0]) == 1):
-            values = np.array(values).reshape(-1, 1)
-
+        values = self._getCaseMultipleAttributeValues(xesLog, allAttributes)
+        km = KModes(n_clusters=k_clusters, init='random')
         clusters = km.fit_predict(values)
-        valueClusterDict = self.__getValueToCluster(km, values)
 
-        print(valueClusterDict)
-        print(km.cluster_centroids_)
+        # Get a dict with the value as key and the cluster it is assigned to as value
+        valueToClusterDict = self.__getValuesOfSensitiveAttributePerClusterAsDict(clusters, values)
+        clusterModeDict = self.__getModeOfSensitiveAttributePerCluster(clusters, values, k_clusters)
 
         # Apply clustered data mode to log
         for case_index, case in enumerate(xesLog):
             if(sensitiveAttribute in case.attributes.keys()):
-                t = tuple((case.attributes[attribute] if attribute in case.attributes.keys() else 0) for attribute in clusterRelevantAttributes)
-                case.attributes[sensitiveAttribute] = km.cluster_centroids_[valueClusterDict[t]][-1]
+                clusterOfValue = valueToClusterDict[case.attributes[sensitiveAttribute]]
+                case.attributes[sensitiveAttribute] = clusterModeDict[clusterOfValue]
 
         return self.AddExtension(xesLog, 'con', 'case', sensitiveAttribute)
 
@@ -188,31 +195,21 @@ class Condensation(AnonymizationOperationInterface):
             raise NotImplementedError("Use a numeric attribute")
         pass
 
-    def __clusterizeData(self, values, k_clusters):
-        # initialize KMeans object specifying the number of desired clusters
-        kmeans = KMeans(n_clusters=k_clusters)
+    def __getValuesOfSensitiveAttributePerClusterAsDict(self, clusterLabels, values):
+        valueToClusterDict = {}
+        for i in range(len(clusterLabels)):
+            # [-1] as the sensitive attribute value is always the last in the list
+            if values[i][-1] not in valueToClusterDict.keys():
+                valueToClusterDict[values[i][-1]] = clusterLabels[i]
+        return valueToClusterDict
 
-        # reshape data to make them clusterable
-        readyData = np.array(values).reshape(-1, 1)
+    def __getModeOfSensitiveAttributePerCluster(self, clusterLabels, values, k_clusters):
+        clusterValues = {k: [] for k in range(k_clusters)}
+        for i in range(len(clusterLabels)):
+            clusterValues[clusterLabels[i]].append(values[i][-1])
 
-        # learning the clustering from the input date
-        kmeans.fit(readyData)
+        modeDict = {k: 0 for k in range(k_clusters)}
+        for k in range(k_clusters):
+            modeDict[k] = self.__getMode(clusterValues[k])
 
-        return kmeans
-
-    def __getValueToCluster(self, kmeans, values):
-        # Provides a cluster number for every key
-        valueClusterDict = {}
-        for i in range(len(kmeans.labels_)):
-            if values[i] not in valueClusterDict:
-                valueClusterDict[values[i]] = kmeans.labels_[i]
-        return valueClusterDict
-
-    def __getClusterMode(self, kmeans, values):
-        valueClusterDict = self.__getValueToCluster(kmeans, values)
-
-        clusterMode = {}
-        for i in range(kmeans.n_clusters):
-            clusterMode[i] = self.__getMode([x for x in valueClusterDict.keys() if valueClusterDict[x] == i])
-
-        return clusterMode
+        return modeDict
