@@ -18,11 +18,11 @@ class Cryptography(AnonymizationOperationInterface):
         self.cryptoIV = b'I am IV for AES!'
         self.cryptoSalt = "a.9_Oq1S*23xLgB"
 
-    def HashEventAttribute(self, xesLog, targetedAttribute, matchAttribute=None, matchAttributeValue=None,  hashAlgo='ripemd160'):
+    def HashEventAttribute(self, xesLog, targetedAttribute, conditional=None,  hashAlgo='ripemd160'):
         for case_index, case in enumerate(xesLog):
             for event_index, event in enumerate(case):
                 # Only hash if value is a match or no mathcing is required
-                isMatch = matchAttribute in (None, '') or (matchAttribute in event.keys() and event[matchAttribute] == matchAttributeValue)
+                isMatch = conditional in (None, '') or conditional(case, event)
 
                 if(isMatch and targetedAttribute in event.keys()):
                     # Only supress resource if activity value is a match
@@ -32,11 +32,11 @@ class Cryptography(AnonymizationOperationInterface):
 
         return self.AddExtension(xesLog, 'cry', 'event', targetedAttribute)
 
-    def EncryptEventAttribute(self, xesLog, targetedAttribute, matchAttribute=None, matchAttributeValue=None):
+    def EncryptEventAttribute(self, xesLog, targetedAttribute, conditional=None):
         for case_index, case in enumerate(xesLog):
             for event_index, event in enumerate(case):
                 # Only crypt if value is a match or no mathcing is required
-                isMatch = matchAttribute in (None, '') or (matchAttribute in event.keys() and event[matchAttribute] == matchAttributeValue)
+                isMatch = conditional in (None, '') or conditional(case, event)
 
                 if(isMatch and targetedAttribute in event.keys()):
                     cipher = AES.new(self.cryptoKey, AES.MODE_CBC, iv=self.cryptoIV)
@@ -44,12 +44,12 @@ class Cryptography(AnonymizationOperationInterface):
 
         return self.AddExtension(xesLog, 'cry', 'event', targetedAttribute)
 
-    def HashCaseAttribute(self, xesLog, targetedAttribute, matchAttribute=None, matchAttributeValue=None, hashAlgo='ripemd160'):
+    def HashCaseAttribute(self, xesLog, targetedAttribute, conditional=None, hashAlgo='ripemd160'):
         h = hashlib.new(hashAlgo)
 
         for case_index, case in enumerate(xesLog):
             # Only hash if value is a match or no mathcing is required
-            isMatch = matchAttribute in (None, '') or (matchAttribute in case.attributes.keys() and case.attributes[matchAttribute] == matchAttributeValue)
+            isMatch = conditional in (None, '') or conditional(case, None)
 
             if(isMatch and targetedAttribute in case.attributes.keys()):
                 h.update((self.cryptoSalt + str(case.attributes[targetedAttribute])).encode('utf-8'))
@@ -57,10 +57,10 @@ class Cryptography(AnonymizationOperationInterface):
 
         return self.AddExtension(xesLog, 'cry', 'case', targetedAttribute)
 
-    def EncryptCaseAttribute(self, xesLog, targetedAttribute, matchAttribute=None, matchAttributeValue=None):
+    def EncryptCaseAttribute(self, xesLog, targetedAttribute, conditional=None):
         for case_index, case in enumerate(xesLog):
             # Only crypt if value is a match or no mathcing is required
-            isMatch = matchAttribute in (None, '') or (matchAttribute in case.attributes.keys() and case.attributes[matchAttribute] == matchAttributeValue)
+            isMatch = conditional in (None, '') or conditional(case, None)
 
             if(isMatch and targetedAttribute in case.attributes.keys()):
                 cipher = AES.new(self.cryptoKey, AES.MODE_CBC, iv=self.cryptoIV)

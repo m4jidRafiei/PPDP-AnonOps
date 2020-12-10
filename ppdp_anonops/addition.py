@@ -11,23 +11,23 @@ class Addition(AnonymizationOperationInterface):
     def __init__(self):
         super(Addition, self).__init__()
 
-    def AddEventAtRandomPlaceInTrace(self, xesLog, eventTemplate, matchAttribute=None, matchAttributeValue=None, matchOperation=None, doNotUseRandomlyGeneratedTimestamp=False):
-        return self.AddEventAtPositionX(xesLog, eventTemplate, matchAttribute, matchAttributeValue, matchOperation, doNotUseRandomlyGeneratedTimestamp, -1)
+    def AddEventAtRandomPlaceInTrace(self, xesLog, eventTemplate, conditional=None, doNotUseRandomlyGeneratedTimestamp=False):
+        return self.AddEventAtPositionX(xesLog, eventTemplate, conditional, doNotUseRandomlyGeneratedTimestamp, -1)
 
-    def AddEventFirstInTrace(self, xesLog, eventTemplate, matchAttribute=None, matchAttributeValue=None, matchOperation=None, doNotUseRandomlyGeneratedTimestamp=False):
-        return self.AddEventAtPositionX(xesLog, eventTemplate, matchAttribute, matchAttributeValue, matchOperation, doNotUseRandomlyGeneratedTimestamp, 0)
+    def AddEventFirstInTrace(self, xesLog, eventTemplate, conditional=None, doNotUseRandomlyGeneratedTimestamp=False):
+        return self.AddEventAtPositionX(xesLog, eventTemplate, conditional, doNotUseRandomlyGeneratedTimestamp, 0)
 
-    def AddEventLastInTrace(self, xesLog, eventTemplate, matchAttribute=None, matchAttributeValue=None, matchOperation=None, doNotUseRandomlyGeneratedTimestamp=False):
-        return self.AddEventAtPositionX(xesLog, eventTemplate, matchAttribute, matchAttributeValue, matchOperation, doNotUseRandomlyGeneratedTimestamp, -2)
+    def AddEventLastInTrace(self, xesLog, eventTemplate, conditional=None, doNotUseRandomlyGeneratedTimestamp=False):
+        return self.AddEventAtPositionX(xesLog, eventTemplate, conditional, doNotUseRandomlyGeneratedTimestamp, -2)
 
-    def AddEventAtPositionX(self, xesLog, eventTemplate, matchAttribute=None, matchAttributeValue=None, matchOperation=None, doNotUseRandomlyGeneratedTimestamp=False, position=-1):
+    def AddEventAtPositionX(self, xesLog, eventTemplate, conditional=None, doNotUseRandomlyGeneratedTimestamp=False, position=-1):
         for case_index, case in enumerate(xesLog):
             newEvent = self.__getEvent(eventTemplate)
             traceLength = len(case)
             lastEvent = case[traceLength - 1]
 
             # Either no attribute match is required or the lastEvent is a match
-            isMatch = (matchAttribute in ('', None) and matchAttributeValue in ('', None)) or matchOperation is None or matchOperation(case, matchAttribute, matchAttributeValue)
+            isMatch = conditional is None or conditional(case, None)
 
             if(isMatch):
                 newPos = position
