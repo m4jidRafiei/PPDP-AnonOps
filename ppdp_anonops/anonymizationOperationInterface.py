@@ -62,11 +62,11 @@ class AnonymizationOperationInterface(metaclass=abc.ABCMeta):
         """ Returns a 2D-Array with all cases in first dimension and their requested attributes in order of the array given as parameter as second dimension"""
         values = []
         for case_index, case in enumerate(xesLog):
-            c = []
-            for attribute in attributes:
-                if(attribute in case.attributes.keys()):
+            if all(attribute in case.attributes.keys() for attribute in attributes):
+                c = []
+                for attribute in attributes:
                     c.append(case.attributes[attribute])
-            values.append(c)
+                values.append(c)
         return values
 
     def _getEventMultipleAttributeValues(self, xesLog, attributes):
@@ -74,11 +74,11 @@ class AnonymizationOperationInterface(metaclass=abc.ABCMeta):
         values = []
         for case_index, case in enumerate(xesLog):
             for event_index, event in enumerate(case):
-                c = []
-                for attribute in attributes:
-                    if(attribute in event.keys()):
+                if all(attribute in event.keys() for attribute in attributes):
+                    c = []
+                    for attribute in attributes:
                         c.append(event[attribute])
-                values.append(c)
+                    values.append(c)
         return values
 
     def _getEventAttributesTuples(self, xesLog, clusterRelevantAttributes):
