@@ -27,7 +27,7 @@ class Suppression(AnonymizationOperationInterface):
 
     def SuppressCase(self, xesLog, conditional):
         # filter out all the cases with matching attribute values
-        xesLog[:] = [case for case in xesLog if (not conditional(case, None))]
+        xesLog[:] = [case for idx, case in enumerate(xesLog) if (not conditional(case, None))]
 
         return self.AddExtension(xesLog, 'sup', 'case', 'case')
 

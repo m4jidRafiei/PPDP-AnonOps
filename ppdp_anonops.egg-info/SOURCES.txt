@@ -14,7 +14,6 @@ ppdp_anonops.egg-info/SOURCES.txt
 ppdp_anonops.egg-info/dependency_links.txt
 ppdp_anonops.egg-info/top_level.txt
 ppdp_anonops/tests/__init__.py
-ppdp_anonops/tests/test.py
 ppdp_anonops/tests/test_addition.py
 ppdp_anonops/tests/test_condensation.py
 ppdp_anonops/tests/test_cryptography.py
