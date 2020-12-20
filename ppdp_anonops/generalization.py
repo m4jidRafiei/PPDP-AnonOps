@@ -8,7 +8,7 @@ class Generalization(AnonymizationOperationInterface):
         super(Generalization, self).__init__()
 
     def GeneralizeEventAttributeByTaxonomyTreeDepth(self, xesLog, sensitiveAttribute, taxonomyTree, depth):
-        depth = int(depth)
+        depth = int(depth) + 1
         taxDict = taxonomyTree.GetPathDict_NodeNamesUntilLeaf()
 
         # Replace all attribute values below 'depth' in the taxTree with their generalized parental value
@@ -25,7 +25,7 @@ class Generalization(AnonymizationOperationInterface):
         return self.AddExtension(xesLog, 'gen', 'event', sensitiveAttribute)
 
     def GeneralizeCaseAttributeByTaxonomyTreeDepth(self, xesLog, sensitiveAttribute, taxonomyTree, depth):
-        depth = int(depth)
+        depth = int(depth) + 1
         taxDict = taxonomyTree.GetPathDict_NodeNamesUntilLeaf()
 
         # Replace all attribute values below 'depth' in the taxTree with their generalized parental value
