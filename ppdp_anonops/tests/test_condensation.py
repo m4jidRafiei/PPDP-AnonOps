@@ -18,9 +18,20 @@ class TestCondensation(TestCase):
             # Needs to be a numeric attribute
             matchAttribute = "CRP"
 
-            log = s.CondenseEventAttributeBykMeanClusterUsingMode(log, matchAttribute, clusters)
+            log = s.CondenseEventAttributeBykMeanCluster(log, matchAttribute, ["org:group"], clusters, "mode")
 
             self.assertEqual(self.__getNumberOfDistinctEventAttributeValues(log, matchAttribute), clusters)
+
+    def test_02_eee(self):
+        log = xes_importer.apply(os.path.join(os.path.dirname(__file__), 'resources', 'running_exampleWithCostsAsInt.xes'))
+        s = Condensation()
+
+        # Needs to be a numeric attribute
+        matchAttribute = "Costs"
+
+        log = s.CondenseEventAttributeBykMeanCluster(log, matchAttribute, ["Activity", "Resource"], 4, "mean")
+
+        self.assertEqual(self.__getNumberOfDistinctEventAttributeValues(log, matchAttribute), 4)
 
     def __getNumberOfDistinctEventAttributeValues(self, xesLog, attribute):
         values = []

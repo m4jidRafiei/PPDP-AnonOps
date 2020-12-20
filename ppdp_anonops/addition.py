@@ -22,7 +22,7 @@ class Addition(AnonymizationOperationInterface):
 
     def AddEventAtPositionX(self, xesLog, eventTemplate, conditional=None, doNotUseRandomlyGeneratedTimestamp=False, position=-1):
         for case_index, case in enumerate(xesLog):
-            newEvent = self.__getEvent(eventTemplate)
+            newEvent = self.__getEvent(eventTemplate, xesLog)
             traceLength = len(case)
             lastEvent = case[traceLength - 1]
 
@@ -45,10 +45,29 @@ class Addition(AnonymizationOperationInterface):
         self.AddExtension(xesLog, "add", "case", "trace")
         return xesLog
 
-    def __getEvent(self, eventTemplate):
+    def __getEventAttributeTypes(self, log):
+        typeDict = {}
+
+        for tIdx, trace in enumerate(log):
+            for eIdx, event in enumerate(trace):
+                for key in event.keys():
+                    if key not in typeDict:
+                        typeDict[key] = type(event[key])
+        return typeDict
+
+    def __getEvent(self, eventTemplate, log):
         newEvent = {}
+
+        typeDict = self.__getEventAttributeTypes(log)
         for attribute in eventTemplate:
-            newEvent[attribute['Name']] = attribute['Value']
+            if(typeDict[attribute['Name']] == type(1)):
+                newEvent[attribute['Name']] = int(attribute['Value'])
+            elif(typeDict[attribute['Name']] == type(1.1)):
+                newEvent[attribute['Name']] = float(attribute['Value'])
+            elif(typeDict[attribute['Name']] == type(False)):
+                newEvent[attribute['Name']] = bool(attribute['Value'])
+            else:
+                newEvent[attribute['Name']] = attribute['Value']
         return newEvent
 
     def __getRandomFittingTimestamp(self, events, newIndex):

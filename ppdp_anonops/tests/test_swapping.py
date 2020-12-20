@@ -18,7 +18,7 @@ class TestSwapping(TestCase):
             # Needs to be a numeric attribute
             matchAttribute = "CRP"
 
-            log = s.SwapEventAttributeValuesBykMeanCluster(log, matchAttribute, clusters)
+            log = s.SwapEventAttributeValuesBykMeanCluster(log, matchAttribute, ["org:resource"], clusters)
 
             # What to assert on a randomized cluster value?...
 

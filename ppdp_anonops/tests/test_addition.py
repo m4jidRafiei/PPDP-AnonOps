@@ -33,7 +33,7 @@ class TestAddition(TestCase):
         self.__checkLogProperties(log, noCases=6, noEvents=42)
 
         eventTemplate = self.getTestEventTemplate()
-        log = s.AddEventLastInTrace(log, eventTemplate, matchAttribute, matchAttributeValue, self.getMatchLambda(), doNotUseRandomlyGeneratedTimestamp=False)
+        log = s.AddEventLastInTrace(log, eventTemplate, self.getMatchLambda(), doNotUseRandomlyGeneratedTimestamp=False)
 
         self.__checkTimestampContinuity(log)
         self.__checkLogProperties(log, noCases=6, noEvents=45)
@@ -55,7 +55,7 @@ class TestAddition(TestCase):
         self.__checkLogProperties(log, noCases=6, noEvents=42)
 
         eventTemplate = self.getTestEventTemplate()
-        log = s.AddEventFirstInTrace(log, eventTemplate, matchAttribute, matchAttributeValue, self.getMatchLambda(), doNotUseRandomlyGeneratedTimestamp=False)
+        log = s.AddEventFirstInTrace(log, eventTemplate, self.getMatchLambda(), doNotUseRandomlyGeneratedTimestamp=False)
 
         self.__checkTimestampContinuity(log)
         self.__checkLogProperties(log, noCases=6, noEvents=45)
