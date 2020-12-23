@@ -1,11 +1,13 @@
-# PPDP-AnonOps
-This project is part of a bachelor thesis at the PADS-Group of the i9 chair at RWTH Aachen University.
+## Introduction
+This project implemets basic anonymization operations for event data which are used by process mining techniques. The anonymization operations are formally explained in the following paper: https://www.researchgate.net/publication/342048551_Privacy-Preserving_Data_Publishing_in_Process_Mining
 
+Ref: implemeted by "Alexander 'DevSchnitzel' Schnitzler" as part of his bachelor thesis at PADS group.
+## Python Package
+The implementation has been published as a standard Python package. Use the following command to install the corresponding Python package:
 
-
-###Usage
-Currently there is no officially registered package to install via pip, but you can still use and test it locally:
 ```shell
-pip install .
-python setup.py test
+pip install ppdp-anonops
 ```
+
+## Usage
+Look at the following directory in the Github project to see the samples of usage: "ppdp-anonops/tests"
